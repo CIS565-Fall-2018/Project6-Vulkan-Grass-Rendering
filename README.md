@@ -1,7 +1,7 @@
 Instructions - Vulkan Grass Rendering
 ========================
 
-This is due **Sunday 11/5, evening at midnight**.
+This is due **Sunday 11/4, evening at midnight**.
 
 **Summary:**
 In this project, you will use Vulkan to implement a grass simulator and renderer. You will
@@ -17,16 +17,16 @@ shaders and two graphics pipelines, one for rendering the geometry that grass wi
 rendering the grass itself. Your job will be to write the shaders for the grass graphics pipeline and the compute pipeline, 
 as well as binding any resources (descriptors) you may need to accomplish the tasks described in this assignment.
 
-![](img/grass.gif)
+![](img/grass.gif) ![](img/grass2.gif)
 
 You are not required to use this base code if you don't want
 to. You may also change any part of the base code as you please.
-**This is YOUR project.** The above .gif is just a simple example that you
-can use as a reference to compare to.
+**This is YOUR project.** The above .gifs are just examples that you
+can use as a reference to compare to. Feel free to get creative with your implementations!
 
 **Important:**
 - If you are not in CGGT/DMD, you may replace this project with a GPU compute
-project. You MUST get this pre-approved by Austin Eng before continuing!
+project. You MUST get this pre-approved by Ottavio before continuing!
 
 ### Contents
 
@@ -53,8 +53,7 @@ are all set!
 
 While developing your grass renderer, you will want to keep validation layers enabled so that error checking is turned on. 
 The project is set up such that when you are in `debug` mode, validation layers are enabled, and when you are in `release` mode,
-validation layers are disabled. After building the code, you should be able to run the project without any errors. You will see 
-a plane with a grass texture on it to begin with.
+validation layers are disabled. After building the code, you should be able to run the project without any errors. You will see a plane with a grass texture on it to begin with.
 
 ![](img/cube_demo.png)
 
@@ -110,6 +109,10 @@ This project is an implementation of the paper, [Responsive Real-Time Grass Rend
 Please make sure to use this paper as a primary resource while implementing your grass renderers. It does a great job of explaining
 the key algorithms and math you will be using. Below is a brief description of the different components in chronological order of how your renderer will
 execute, but feel free to develop the components in whatever order you prefer.
+
+We recommend starting with trying to display the grass blades without any forces on them before trying to add any forces on the blades themselves. Here is an example of what that may look like:
+
+![](img/grass_basic.gif)
 
 ### Representing Grass as Bezier Curves
 
@@ -236,7 +239,7 @@ of each blade. Once you have determined the world space position of each vector,
 
 ** Extra Credit**: Tessellate to varying levels of detail as a function of how far the grass blade is from the camera. For example, if the blade is very far, only generate four vertices in the tessellation control shader.
 
-To build more intuition on how tessellation works, I highly recommend playing with the [helloTessellation sample](https://github.com/CIS565-Fall-2017/Vulkan-Samples/tree/master/samples/5_helloTessellation)
+To build more intuition on how tessellation works, I highly recommend playing with the [helloTessellation sample](https://github.com/CIS565-Fall-2018/Vulkan-Samples/tree/master/samples/5_helloTessellation)
 and reading this [tutorial on tessellation](http://in2gpu.com/2014/07/12/tessellation-tutorial-opengl-4-3/).
 
 ## Resources
@@ -246,7 +249,7 @@ and reading this [tutorial on tessellation](http://in2gpu.com/2014/07/12/tessell
 The following resources may be useful for this project.
 
 * [Responsive Real-Time Grass Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf)
-* [CIS565 Vulkan samples](https://github.com/CIS565-Fall-2017/Vulkan-Samples)
+* [CIS565 Vulkan samples](https://github.com/CIS565-Fall-2018/Vulkan-Samples)
 * [Official Vulkan documentation](https://www.khronos.org/registry/vulkan/)
 * [Vulkan tutorial](https://vulkan-tutorial.com/)
 * [RenderDoc blog on Vulkan](https://renderdoc.org/vulkan-in-30-minutes.html)
@@ -270,7 +273,7 @@ The following resources may be useful for this project.
 ## README
 
 * A brief description of the project and the specific features you implemented.
-* At least one screenshot of your project running.
+* GIFs of your project in its different stages with the different features being added incrementally.
 * A performance analysis (described below).
 
 ### Performance Analysis
