@@ -212,13 +212,13 @@ void Renderer::CreateComputeDescriptorSetLayout() {
 	inputBladesBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 	inputBladesBinding.pImmutableSamplers = nullptr;
 
-	// Describe the binding of the culled blades layout
-	VkDescriptorSetLayoutBinding culledBladesBinding = {};
-	culledBladesBinding.binding = 1;
-	culledBladesBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	culledBladesBinding.descriptorCount = 1;
-	culledBladesBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-	culledBladesBinding.pImmutableSamplers = nullptr;
+	// Describe the binding of the non-culled blades layout
+	VkDescriptorSetLayoutBinding nonCulledBladesBinding = {};
+	nonCulledBladesBinding.binding = 1;
+	nonCulledBladesBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	nonCulledBladesBinding.descriptorCount = 1;
+	nonCulledBladesBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+	nonCulledBladesBinding.pImmutableSamplers = nullptr;
 
 	// Describe the binding of the number blades layout
 	VkDescriptorSetLayoutBinding numBladesBinding = {};
@@ -228,7 +228,7 @@ void Renderer::CreateComputeDescriptorSetLayout() {
 	numBladesBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 	numBladesBinding.pImmutableSamplers = nullptr;
 
-	std::vector<VkDescriptorSetLayoutBinding> bindings = { inputBladesBinding, culledBladesBinding, numBladesBinding };
+	std::vector<VkDescriptorSetLayoutBinding> bindings = { inputBladesBinding, nonCulledBladesBinding, numBladesBinding };
 
 	// Create the descriptor set layout
 	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
