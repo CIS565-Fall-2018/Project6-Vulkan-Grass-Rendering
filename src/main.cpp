@@ -65,9 +65,13 @@ namespace {
     }
 }
 
+
 int main() {
     static constexpr char* applicationName = "Vulkan Grass Rendering";
-    InitializeWindow(640, 480, applicationName);
+
+	int w = 1024;
+	int h = 768;
+    InitializeWindow(w, h, applicationName);
 
     unsigned int glfwExtensionCount = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);

@@ -20,6 +20,8 @@ public:
     void CreateTimeDescriptorSetLayout();
     void CreateComputeDescriptorSetLayout();
 
+	void CreateGrassDescriptorSetLayout();
+
     void CreateDescriptorPool();
 
     void CreateCameraDescriptorSet();
@@ -56,12 +58,19 @@ private:
     VkDescriptorSetLayout cameraDescriptorSetLayout;
     VkDescriptorSetLayout modelDescriptorSetLayout;
     VkDescriptorSetLayout timeDescriptorSetLayout;
+
+	VkDescriptorSetLayout computeDescriptorSetLayout;
+	VkDescriptorSetLayout grassDescriptorSetLayout;
     
     VkDescriptorPool descriptorPool;
 
     VkDescriptorSet cameraDescriptorSet;
     std::vector<VkDescriptorSet> modelDescriptorSets;
     VkDescriptorSet timeDescriptorSet;
+
+	std::vector<VkDescriptorSet> computeDescriptorSets;
+	std::vector<VkDescriptorSet> grassDescriptorSets;
+
 
     VkPipelineLayout graphicsPipelineLayout;
     VkPipelineLayout grassPipelineLayout;

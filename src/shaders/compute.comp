@@ -26,24 +26,70 @@ struct Blade {
 // 2. Write out the culled blades
 // 3. Write the total number of blades remaining
 
+layout(set = 2, binding = 0) buffer Blades {
+	Blade blades[];
+};
+
+layout(set = 2, binding = 1) buffer Culled {
+	Blade culled[];
+};
+
 // The project is using vkCmdDrawIndirect to use a buffer as the arguments for a draw call
 // This is sort of an advanced feature so we've showed you what this buffer should look like
 //
-// layout(set = ???, binding = ???) buffer NumBlades {
-// 	  uint vertexCount;   // Write the number of blades remaining here
-// 	  uint instanceCount; // = 1
-// 	  uint firstVertex;   // = 0
-// 	  uint firstInstance; // = 0
-// } numBlades;
+layout(set = 2, binding = 2) buffer NumBlades {
+ 	uint vertexCount;   // Write the number of blades remaining here
+	uint instanceCount; // = 1
+ 	uint firstVertex;   // = 0
+	uint firstInstance; // = 0
+} numBlades;
 
 bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
 }
 
+bool bladeInBounds(vec3 v0, vec3 v1, vec3 v2) {
+
+	vec4 m = vec4((v0 / 4) * (v1 / 2) * (v2 / 4), 1.0);
+
+	vec4 v_v0 = camera.proj * camera.view * vec4(v0, 1.0);
+	v_v0 = v_v0 / v_v0.w;
+	vec4 v_v2 = camera.proj * camera.view * vec4(v2, 1.0);
+	v_v2 = v_v2 / v_v2.w;
+	m = camera.proj * camera.view * m;
+	m = m / m.w;
+	
+	bool y_in = inBounds(v_v0.y, 0.5);
+	bool x_in = inBounds(v_v0.x, 0.5);
+	bool z_in = inBounds(v_v0.z + 0.5, 0.5);
+
+	if (y_in && x_in && z_in) {
+		return true;
+	}
+
+	y_in = inBounds(v_v2.y, 0.5);
+	x_in = inBounds(v_v2.x, 0.5);
+	z_in = inBounds(v_v2.z + 0.5, 0.5);
+
+	if (y_in && x_in && z_in) {
+		return true;
+	}
+
+	y_in = inBounds(m.y, 0.5);
+	x_in = inBounds(m.x, 0.5);
+	z_in = inBounds(m.z + 0.5, 0.5);
+
+	if (y_in && x_in && z_in) {
+		return true;
+	}
+
+	return false;
+}
+
 void main() {
 	// Reset the number of blades to 0
 	if (gl_GlobalInvocationID.x == 0) {
-		// numBlades.vertexCount = 0;
+		numBlades.vertexCount = 0;
 	}
 	barrier(); // Wait till all threads reach this point
 
@@ -53,4 +99,28 @@ void main() {
 	// to the culled blades buffer
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
+
+	// v0 and orientation
+	vec3 v0 = blades[gl_GlobalInvocationID.x].v0.xyz;
+	float face = blades[gl_GlobalInvocationID.x].v0.w;
+
+	// v1 and height
+	vec3 v1 = blades[gl_GlobalInvocationID.x].v1.xyz;
+	float h = blades[gl_GlobalInvocationID.x].v1.w;
+
+	// v2 and width
+	vec3 v2 = blades[gl_GlobalInvocationID.x].v2.xyz;
+	float w = blades[gl_GlobalInvocationID.x].v2.w;
+
+	// up direction and stiffness
+	vec3 up = blades[gl_GlobalInvocationID.x].up.xyz;
+	float stiff = blades[gl_GlobalInvocationID.x].up.w;
+
+
+	// for now until culling and stuff added
+	if (bladeInBounds(v0, v1, v2) == true) {
+		uint idx = atomicAdd(numBlades.vertexCount , 1);
+		culled[idx] = blades[gl_GlobalInvocationID.x];
+	}
+
 }
