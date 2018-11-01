@@ -48,35 +48,44 @@ bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
 }
 
-bool bladeInBounds(vec3 v0, vec3 v1, vec3 v2, float threshold) {
+bool bladeInBounds(vec3 v0, vec3 v1, vec3 v2, float w) {
+	float threshold = 1.0;
 
 	vec4 m = vec4((v0 / 4) + (v1 / 2) + (v2 / 4), 1.0);
 
-	vec4 v_v0 = camera.proj * camera.view * vec4(v0, 1.0);
+	// v0
+	vec4 v_v0 = camera.view * vec4(v0, 1.0);
+	float tolerance = w * -v_v0.z / v_v0.w;
+	v_v0 = camera.proj * v_v0;
 	v_v0 = v_v0 / v_v0.w;
+	
+	bool y_in = inBounds(v_v0.y, threshold + tolerance);
+	bool x_in = inBounds(v_v0.x, threshold + tolerance);
+	bool z_in = inBounds(v_v0.z - 0.5, threshold / 2.0 + tolerance);
+
+	if (y_in && x_in && z_in) {
+		return true;
+	}
+
+	// v2
 	vec4 v_v2 = camera.proj * camera.view * vec4(v2, 1.0);
 	v_v2 = v_v2 / v_v2.w;
+
+	y_in = inBounds(v_v2.y, threshold + tolerance);
+	x_in = inBounds(v_v2.x, threshold + tolerance);
+	z_in = inBounds(v_v2.z - 0.5, threshold / 2.0 + tolerance);
+
+	if (y_in && x_in && z_in) {
+		return true;
+	}
+
+	// midpoint
 	m = camera.proj * camera.view * m;
 	m = m / m.w;
 	
-	bool y_in = inBounds(v_v0.y, threshold);
-	bool x_in = inBounds(v_v0.x, threshold);
-	bool z_in = inBounds(v_v0.z - 0.5, threshold / 2.0);
-
-	if (y_in && x_in && z_in) {
-		return true;
-	}
-	y_in = inBounds(v_v2.y, threshold);
-	x_in = inBounds(v_v2.x, threshold);
-	//z_in = inBounds(v_v2.z - 0.5, threshold);
-
-	if (y_in && x_in && z_in) {
-		return true;
-	}
-	
-	y_in = inBounds(m.y, threshold);
-	x_in = inBounds(m.x, threshold);
-	z_in = inBounds(m.z - 0.5, threshold);
+	y_in = inBounds(m.y, threshold + tolerance);
+	x_in = inBounds(m.x, threshold + tolerance);
+	z_in = inBounds(m.z - 0.5, threshold / 2.0 + tolerance);
 
 	if (y_in && x_in && z_in) {
 		return true;
@@ -115,11 +124,15 @@ void main() {
 	vec3 up = blades[gl_GlobalInvocationID.x].up.xyz;
 	float stiff = blades[gl_GlobalInvocationID.x].up.w;
 
-	// frustrum culling
-	float threshold = 1.0 + w / 2.0;
-	bool f_cull = bladeInBounds(v0, v1, v2, threshold);
+	// view frustrum culling with w/2 tolerance
+	
+	bool f_cull = bladeInBounds(v0, v1, v2, w / 2.0);
 
-	// for now until culling and stuff added
+	// orientation culling
+
+	// distance culling
+
+
 	if (f_cull) {
 		uint idx = atomicAdd(numBlades.vertexCount , 1);
 		culled[idx] = blades[gl_GlobalInvocationID.x];
