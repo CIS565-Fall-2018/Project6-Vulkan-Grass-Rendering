@@ -101,13 +101,13 @@ void main() {
 		numBlades.vertexCount = 0;
 	}
 	barrier(); // Wait till all threads reach this point
+	
+	bool cull_distance = true; // debugging
 
 	/*  ---------------
 	 *    Load Blade
 	 *  ---------------
 	 */
-	bool cull_distance = true; // debugging
-
 	// Load blade properties
 	// v0 and orientation
 	vec3 v0 = blades[gl_GlobalInvocationID.x].v0.xyz;
@@ -231,8 +231,8 @@ void main() {
 	vec4 cam_look = normalize(inverse(camera.view) * vec4(0,0,-1,0));
 
 	bool o_cull_pass = true;
-	vec3 bi = normalize(cross(normalize(up), norm));
-	float o_test = dot(vec2(cam_look.x, cam_look.z), vec2(bi.x, bi.z));
+	vec3 tan = normalize(cross(normalize(up), norm));
+	float o_test = dot(vec2(cam_look.x, cam_look.z), vec2(tan.x, tan.z));
 	// if the camera and normal are near perpendicular, cull
 	if (abs(o_test) > 0.9) o_cull_pass = false;
 
@@ -246,7 +246,7 @@ void main() {
 	// toggle is at top of main
 	if (cull_distance) {
 	int num_bins = 10;
-	float step = 1.5;
+	float step = 2.0;
 	vec4 v_v0 = camera.view * vec4(v0, 1.0);
 	z = -v_v0.z;
 
@@ -255,7 +255,7 @@ void main() {
 	if (z > (num_bins * step) + 0.1) d_cull_pass = false;
 
 	int bin = int(floor((z - 0.1) / step));
-	if (gl_GlobalInvocationID.x % bin > 2) d_cull_pass = false;
+	if (gl_GlobalInvocationID.x % bin > 1.0) d_cull_pass = false;
 	}
 
 	/*  ---------------
