@@ -198,6 +198,21 @@ void Renderer::CreateComputeDescriptorSetLayout() {
     // TODO: Create the descriptor set layout for the compute pipeline
     // Remember this is like a class definition stating why types of information
     // will be stored at each binding
+	VkDescriptorSetLayoutBinding layoutBinding = {};
+	layoutBinding.binding = 0;
+	layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	layoutBinding.descriptorCount = 1;
+	layoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+	layoutBinding.pImmutableSamplers = nullptr;
+
+	std::vector<VkDescriptorSetLayoutBinding> layoutBindingContainer = { layoutBinding };
+	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = static_cast<uint32_t>(layoutBindingContainer.size());
+	layoutInfo.pBindings = layoutBindingContainer.data();
+	VkResult createdSucessfully = vkCreateDescriptorSetLayout(logicalDevice, &layoutInfo, nullptr, &computeDescriptorSetLayout);
+	assert(createdSucessfully == VK_SUCCESS);
 }
 
 void Renderer::CreateDescriptorPool() {
@@ -360,6 +375,36 @@ void Renderer::CreateTimeDescriptorSet() {
 void Renderer::CreateComputeDescriptorSets() {
     // TODO: Create Descriptor sets for the compute pipeline
     // The descriptors should point to Storage buffers which will hold the grass blades, the culled grass blades, and the output number of grass blades 
+	computeDescriptortSetContainer.resize(scene->GetBlades().size());
+
+	VkDescriptorSetLayout layouts[] = { computeDescriptorSetLayout };
+	VkDescriptorSetAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = descriptorPool;
+	allocInfo.descriptorSetCount = static_cast<uint32_t>(computeDescriptortSetContainer.size());
+	allocInfo.pSetLayouts = layouts;
+
+	VkResult createdSuccessfully = vkAllocateDescriptorSets(logicalDevice, &allocInfo, computeDescriptortSetContainer.data());
+	assert(createdSuccessfully == VK_SUCCESS);
+
+	std::vector<VkWriteDescriptorSet> descriptorWrites(computeDescriptortSetContainer.size());
+	for (uint32_t i = 0; i < scene->GetBlades().size(); ++i)
+	{
+		VkDescriptorBufferInfo computeBufferInfo = {};
+		computeBufferInfo.buffer = scene->GetBlades()[i]->GetModelBuffer();
+		computeBufferInfo.offset = 0;
+		computeBufferInfo.range = sizeof(Blade);
+		descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrites[i].dstSet = computeDescriptortSetContainer[i];
+		descriptorWrites[i].dstBinding = 0;
+		descriptorWrites[i].dstArrayElement = 0;
+		descriptorWrites[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		descriptorWrites[i].descriptorCount = 1;
+		descriptorWrites[i].pBufferInfo = &computeBufferInfo;
+		descriptorWrites[i].pImageInfo = nullptr;
+		descriptorWrites[i].pTexelBufferView = nullptr;
+	}
+	vkUpdateDescriptorSets(logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
 
 void Renderer::CreateGraphicsPipeline() {
@@ -718,6 +763,7 @@ void Renderer::CreateComputePipeline() {
 
     // TODO: Add the compute dsecriptor set layout you create to this list
     std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { cameraDescriptorSetLayout, timeDescriptorSetLayout };
+	descriptorSetLayouts.push_back(computeDescriptorSetLayout);
 
     // Create pipeline layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
