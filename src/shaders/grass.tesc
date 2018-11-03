@@ -32,9 +32,9 @@ void main() {
 
 	// Set level of tesselation
     gl_TessLevelInner[0] = 1; // num horizontal slices
-    gl_TessLevelInner[1] = 2; // num vertical slices
-    gl_TessLevelOuter[0] = 2; // num left edge slices
+    gl_TessLevelInner[1] = 4; // num vertical slices
+    gl_TessLevelOuter[0] = 4; // num left edge slices
     gl_TessLevelOuter[1] = 1; // num top edge slices
-    gl_TessLevelOuter[2] = 2; // num right edge slices
+    gl_TessLevelOuter[2] = 4; // num right edge slices
     gl_TessLevelOuter[3] = 1; // num bottom edge slices
 }

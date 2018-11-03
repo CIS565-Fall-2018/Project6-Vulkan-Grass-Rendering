@@ -76,32 +76,46 @@ void main() {
 	vec3 rotation = vec3(cos(angle), 0, sin(angle));
 	vec3 direction = normalize(cross(up, rotation));
 
+	mat4 view_proj = camera.proj * camera.view;
+
 	// constant variables
-	float GRAVITY = 10.0;
 	vec3 WIND = vec3(sin(totalTime) * 15.0, 0, mod(totalTime, 10));
-	float CURVATURE = 0.05;
+	float CURVATURE = 0.5;
 	bool CULL_BY_ORIENTATION = true;
 	float ORIENTATION_THRESHOLD = 0.1;
 	bool CULL_BY_FRUSTUM = true;
-	float FRUSTUM_THRESHOLD = 0.09;
+	float FRUSTUM_THRESHOLD = 0.05;
 	bool CULL_BY_DISTANCE = true;
-	float DISTANCE_THRESHOLD = 100.0;
-	int NUM_BUCKETS_FOR_DISTANCE = 15;
+	float DISTANCE_THRESHOLD = 1.1;
+	int NUM_BUCKETS_FOR_DISTANCE = 25;
 
-    // TODO: Apply forces on every blade and update the vertices in the buffer
+	bool USING_WIND = true;
+
+    // DONE: Apply forces on every blade and update the vertices in the buffer
 	// gravity = actual gravity + gravity in direction
-	vec3 gravity = vec3(0, -GRAVITY, 0) + (GRAVITY * direction * 0.25);
+	vec3 dir = vec3(0, -1, 0);
+	vec3 gE = normalize(dir) * 9.81;
+	vec3 gravity = gE + length(gE) * direction * 0.25;
 
 	// recovery
 	vec3 init = v0 + up * height;
 	vec3 recovery = (init - v2) * stiffness;
 
-	// wind
+	// wind 1
 	vec3 wind_direction = normalize(WIND);
 	float strength_in_direction = dot(wind_direction, normalize(v2 - v0));
 	float direction_alignment = 1 - abs(strength_in_direction);
 	float wind_alignment = direction_alignment * dot((v2 - v0), up) / height;
-	vec3 wind = WIND * wind_alignment;
+	vec3 wind0 = WIND * wind_alignment;
+
+	// wind 2
+	vec3 wind_i = vec3(sin(v0.x + totalTime) + sin(v0.y + totalTime));
+	vec3 fd = 1 - abs(normalize(wind_i) - normalize(v2 - v0));
+	float fr = dot(v2 - v0, up) / height;
+	vec3 wind1 = wind_i * fd * fr;
+
+	// pick which wind implementation we want to use
+	vec3 wind = USING_WIND ? wind1 : wind0;
 
 	// total force
 	vec3 total_force = deltaTime * (gravity + recovery + wind);
@@ -136,18 +150,22 @@ void main() {
 	
 	// dont render grass within the angle threshold of look vector
 	if (CULL_BY_ORIENTATION) {
-		vec4 camera_Z = normalize(inverse(camera.view) * vec4(0, 0, 1, 0));
-		if (abs(dot(vec3(camera_Z), direction)) < ORIENTATION_THRESHOLD) { return; }
+		vec4 view_dir = normalize(inverse(camera.view) * vec4(0, 0, -1, 0));
+
+		// dont do cullting if cam looking straight down to ground
+		view_dir.y = 0;
+		view_dir = normalize(view_dir);
+
+		if (abs(dot(vec3(view_dir), direction)) < ORIENTATION_THRESHOLD) { return; }
 	}
 	
 	// points to ndc before comparing
 	if (CULL_BY_FRUSTUM) {
-		mat4 view_proj = camera.proj * camera.view;
 		vec4 ndc_v0 = view_proj * vec4(v0, 1);
 		vec4 ndc_v2 = view_proj * vec4(v2, 1);
 
 		// midpoint
-		vec4 ndc_mid = view_proj * vec4(0.25 * (v0 + v1 + v2), 1);
+		vec4 ndc_mid = view_proj * vec4(0.25 * (v0 + 2.0 * v1 + v2), 1);
 
 		// bounds check
 		float v0_w_check = ndc_v0.w + FRUSTUM_THRESHOLD;
@@ -172,18 +190,21 @@ void main() {
 	// remove more blades the farther away the blades are
 	// buckets based on distance
 	if (CULL_BY_DISTANCE) {
-		vec3 camera_Z = vec3(normalize(inverse(camera.view) * vec4(0, 0, 0, 1)));
-		float projected_distance = length(v0 - camera_Z - up * dot(v0 - camera_Z, up));
+		vec4 v0_proj = vec4(normalize(view_proj * vec4(v0, 1)));
+		float projected_distance = v0_proj.z / v0_proj.w;
 		if (projected_distance > DISTANCE_THRESHOLD) { return; }
 
 		// find appropriate buckets for each blade based on distances
-		float on_bucket = int(floor(projected_distance / (DISTANCE_THRESHOLD / NUM_BUCKETS_FOR_DISTANCE)));
+		float bucket_threshold = 1 - projected_distance;
+		bucket_threshold *= NUM_BUCKETS_FOR_DISTANCE; 
 		
 		// remove randomly based on bucket. the closer the fewer removed. the farther the more removed.
-		// pseudo-random-noise function - perlin style
-		float noise = fract(sin(dot(vec2(on_bucket, projected_distance),
-								   vec2(12.9898, 78.233))) * 43758.5453);
-		if (noise > (1.0 - on_bucket / NUM_BUCKETS_FOR_DISTANCE)) { return; }
+		// pseudo-random-noise function
+		float noise = fract(sin(dot(v0.xy, vec2(12.9898, 78.233))) * 43758.5453);
+		if (noise > bucket_threshold) { return; }
+
+		// general distance culling
+		if (projected_distance > 0.999999) { return; }
 	}
 	
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
