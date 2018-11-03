@@ -1,32 +1,27 @@
-Instructions - Vulkan Grass Rendering
-========================
+Vulkan Grass Rendering
+======================
 
-This is due **Sunday 11/4, evening at midnight**.
+**University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 6**
 
-**Summary:**
-In this project, you will use Vulkan to implement a grass simulator and renderer. You will
-use compute shaders to perform physics calculations on Bezier curves that represent individual
-grass blades in your application. Since rendering every grass blade on every frame will is fairly
-inefficient, you will also use compute shaders to cull grass blades that don't contribute to a given frame.
-The remaining blades will be passed to a graphics pipeline, in which you will write several shaders.
-You will write a vertex shader to transform Bezier control points, tessellation shaders to dynamically create
-the grass geometry from the Bezier curves, and a fragment shader to shade the grass blades.
+* Ziad Ben Hadj-Alouane
+  * [LinkedIn](https://www.linkedin.com/in/ziadbha/), [personal website](https://www.seas.upenn.edu/~ziadb/)
+* Tested on: Windows 10, i7-8750H @ 2.20GHz, 16GB, GTX 1060
 
-The base code provided includes all of the basic Vulkan setup, including a compute pipeline that will run your compute
-shaders and two graphics pipelines, one for rendering the geometry that grass will be placed on and the other for 
-rendering the grass itself. Your job will be to write the shaders for the grass graphics pipeline and the compute pipeline, 
-as well as binding any resources (descriptors) you may need to accomplish the tasks described in this assignment.
 
-![](img/grass.gif) ![](img/grass2.gif)
+<p align="center"><img width="700" height="500" src="https://github.com/ziedbha/Project6-Vulkan-Grass-Rendering/blob/master/imgs/top.gif"/></p>
 
-You are not required to use this base code if you don't want
-to. You may also change any part of the base code as you please.
-**This is YOUR project.** The above .gifs are just examples that you
-can use as a reference to compare to. Feel free to get creative with your implementations!
 
-**Important:**
-- If you are not in CGGT/DMD, you may replace this project with a GPU compute
-project. You MUST get this pre-approved by Ottavio before continuing!
+## Grass Rendering
+In this project, I implemented a grass simulator and renderer using Vulkan. The main paper referenced is [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf).
+
+### Compute 
+I use a compute shader to perform physics calculations (gravity, wind, etc..) on Bezier curves that represent individual grass blades. I also use this to perform culling optimizations: based on distance, orientation, and the view-frustum.
+
+### Tesselation
+To generate grass vertices, I tesselate the grass blade using a quad based on how far it is from the camera. A blade is more detailed the closer it is. 
+
+### Rendering
+After a grass is tesselated, I compute a fragments lerped values in the evaluation tesselation phase. After that, I perform simple lambert shading on each fragment.
 
 ### Contents
 
@@ -34,76 +29,7 @@ project. You MUST get this pre-approved by Ottavio before continuing!
   * `shaders/` glsl shader source files
   * `images/` images used as textures within graphics pipelines
 * `external/` Includes and static libraries for 3rd party libraries.
-* `img/` Screenshots and images to use in your READMEs
 
-### Installing Vulkan
-
-In order to run a Vulkan project, you first need to download and install the [Vulkan SDK](https://vulkan.lunarg.com/).
-Make sure to run the downloaded installed as administrator so that the installer can set the appropriate environment
-variables for you.
-
-Once you have done this, you need to make sure your GPU driver supports Vulkan. Download and install a 
-[Vulkan driver](https://developer.nvidia.com/vulkan-driver) from NVIDIA's website.
-
-Finally, to check that Vulkan is ready for use, go to your Vulkan SDK directory (`C:/VulkanSDK/` unless otherwise specified)
-and run the `cube.exe` example within the `Bin` directory. IF you see a rotating gray cube with the LunarG logo, then you
-are all set!
-
-### Running the code
-
-While developing your grass renderer, you will want to keep validation layers enabled so that error checking is turned on. 
-The project is set up such that when you are in `debug` mode, validation layers are enabled, and when you are in `release` mode,
-validation layers are disabled. After building the code, you should be able to run the project without any errors. You will see a plane with a grass texture on it to begin with.
-
-![](img/cube_demo.png)
-
-## Requirements
-
-**Ask on the mailing list for any clarifications.**
-
-In this project, you are given the following code:
-
-* The basic setup for a Vulkan project, including the swapchain, physical device, logical device, and the pipelines described above.
-* Structs for some of the uniform buffers you will be using.
-* Some buffer creation utility functions.
-* A simple interactive camera using the mouse. 
-
-You need to implement the following features/pipeline stages:
-
-* Compute shader (`shaders/compute.comp`)
-* Grass pipeline stages
-  * Vertex shader (`shaders/grass.vert')
-  * Tessellation control shader (`shaders/grass.tesc`)
-  * Tessellation evaluation shader (`shaders/grass.tese`)
-  * Fragment shader (`shaders/grass.frag`)
-* Binding of any extra descriptors you may need
-
-See below for more guidance.
-
-## Base Code Tour
-
-Areas that you need to complete are
-marked with a `TODO` comment. Functions that are useful
-for reference are marked with the comment `CHECKITOUT`.
-
-* `src/main.cpp` is the entry point of our application.
-* `src/Instance.cpp` sets up the application state, initializes the Vulkan library, and contains functions that will create our
-physical and logical device handles.
-* `src/Device.cpp` manages the logical device and sets up the queues that our command buffers will be submitted to.
-* `src/Renderer.cpp` contains most of the rendering implementation, including Vulkan setup and resource creation. You will 
-likely have to make changes to this file in order to support changes to your pipelines.
-* `src/Camera.cpp` manages the camera state.
-* `src/Model.cpp` manages the state of the model that grass will be created on. Currently a plane is hardcoded, but feel free to 
-update this with arbitrary model loading!
-* `src/Blades.cpp` creates the control points corresponding to the grass blades. There are many parameters that you can play with
-here that will change the behavior of your rendered grass blades.
-* `src/Scene.cpp` manages the scene state, including the model, blades, and simualtion time.
-* `src/BufferUtils.cpp` provides helper functions for creating buffers to be used as descriptors.
-
-We left out descriptions for a couple files that you likely won't have to modify. Feel free to investigate them to understand their 
-importance within the scope of the project.
-
-## Grass Rendering
 
 This project is an implementation of the paper, [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf).
 Please make sure to use this paper as a primary resource while implementing your grass renderers. It does a great job of explaining
