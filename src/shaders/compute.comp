@@ -48,7 +48,7 @@ void main() {
 	// Reset the number of blades to 0
 	uint idx = gl_GlobalInvocationID.x;
 	if (idx == 0) {
-		//numBlades.vertexCount = 0;
+		numBlades.vertexCount = 0;
 	}
 	barrier(); // Wait till all threads reach this point
 
@@ -82,12 +82,15 @@ void main() {
 	vec3 force_recovery = (iv2 - v2) * stiffness;
 
 	// Wind: circular
-	float circ_xWind = cos(totalTime);
-	float circ_zWind = sin(totalTime);
-	vec3 circ_windDirection = 5.0 * normalize(vec3(circ_xWind, 0.0, circ_zWind));
+	float xWind = v0.x;
+	float zWind = v0.z;
+	vec3 windDirCircular = normalize(vec3(xWind, 0.0, zWind));
+	float sinTime = sin(totalTime);
+	float windMagnitude = 10 * sin(sinTime * length(vec3(xWind, 0.0, zWind)));
+	vec3 windDirMag = windMagnitude * windDirCircular;
 
 	// Wind force
-	vec3 windDir = circ_windDirection;
+	vec3 windDir = windDirMag;
 
 	float f_d = 1 - abs(dot(normalize(windDir), normalize(v2 - v0)));
 	float f_r = dot(v2 - v0, bladeUp) / height;
@@ -116,7 +119,7 @@ void main() {
 	// Orientation culling
 	vec4 camView = normalize(inverse(camera.proj * camera.view) * vec4(0.0, 0.0, 1.0, 0.0));
 	float orientationFactor = dot(normalize(f.xyz), normalize(camView.xyz));
-	bool cull_orient = abs(orientationFactor) > 0.5;
+	bool cull_orient = abs(orientationFactor) > 0.9;
 
 	// View-Frustum culling
 	vec3 m = 0.25 * v0 + 0.5 * v1 + 0.25 * v2;
@@ -131,14 +134,14 @@ void main() {
 	vec4 m_prime = vp * vec4(m.xyz, 1.0);
 	m_prime /= m_prime.w;
 
-	float threshold = 1.5; // since all w == 1
+	float threshold = 1.1; // since all w == 1
 	bool cull_view = !inBoundsVec(v0_prime.xyz, threshold) && 
 					 !inBoundsVec(v2_prime.xyz, threshold) && 
 					 !inBoundsVec(m_prime.xyz, threshold);
 
 	// Distance culling
-	float maxDist = 10.0;
-	uint nbSlices = 10;
+	float maxDist = 100.0;
+	uint nbSlices = 2;
 	vec4 camPos = vp * vec4(0.0, 0.0, 0.0, 1.0);
 	camPos /= camPos.w;
 	vec4 worldBladeUp = vp * vec4(bladeUp.xyz, 1.0);
@@ -147,7 +150,7 @@ void main() {
 	bool cull_distance = idx % nbSlices < uint(floor(nbSlices * (1 - (d_proj / maxDist))));
 
 	// Final culling decision
-	if (!cull_orient && !cull_view && !cull_distance) {
+	if (!cull_distance && !cull_view && !cull_orient) {
 		nonCulledBlades[atomicAdd(numBlades.vertexCount, 1)] = inputBlades[idx];
 	}
 }
