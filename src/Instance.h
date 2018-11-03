@@ -6,6 +6,9 @@
 #include "QueueFlags.h"
 #include "Device.h"
 
+// Forward declaration to resolve circular dependency
+class Device;
+
 extern const bool ENABLE_VALIDATION;
 
 class Instance {

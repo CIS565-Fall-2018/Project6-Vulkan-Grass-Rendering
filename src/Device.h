@@ -4,7 +4,10 @@
 #include <vulkan/vulkan.h>
 #include "QueueFlags.h"
 #include "SwapChain.h"
+#include "Instance.h"
 
+//Forward declaration to resolve circular dependency
+class Instance;
 class SwapChain;
 class Device {
     friend class Instance;

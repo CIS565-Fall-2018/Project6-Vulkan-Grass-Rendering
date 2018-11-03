@@ -1,3 +1,4 @@
+#include <cstring>
 #include "BufferUtils.h"
 #include "Instance.h"
 
@@ -75,7 +76,7 @@ void BufferUtils::CreateBufferFromData(Device* device, VkCommandPool commandPool
     // Fill the staging buffer
     void *data;
     vkMapMemory(device->GetVkDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, bufferData, static_cast<size_t>(bufferSize));
+    std::memcpy(data, bufferData, static_cast<size_t>(bufferSize));
     vkUnmapMemory(device->GetVkDevice(), stagingBufferMemory);
 
     // Create the buffer
