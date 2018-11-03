@@ -81,15 +81,15 @@ void main() {
 	// constant variables
 	vec3 WIND = vec3(sin(totalTime) * 15.0, 0, mod(totalTime, 10));
 	float CURVATURE = 0.5;
-	bool CULL_BY_ORIENTATION = true;
+	bool CULL_BY_ORIENTATION = false;
 	float ORIENTATION_THRESHOLD = 0.1;
-	bool CULL_BY_FRUSTUM = true;
-	float FRUSTUM_THRESHOLD = 0.05;
-	bool CULL_BY_DISTANCE = true;
-	float DISTANCE_THRESHOLD = 1.1;
+	bool CULL_BY_FRUSTUM = false;
+	float FRUSTUM_THRESHOLD = 0.1;
+	bool CULL_BY_DISTANCE = false;
+	float DISTANCE_THRESHOLD = 2;
 	int NUM_BUCKETS_FOR_DISTANCE = 25;
 
-	bool USING_WIND = true;
+	int USING_WIND_ID = 1;
 
     // DONE: Apply forces on every blade and update the vertices in the buffer
 	// gravity = actual gravity + gravity in direction
@@ -115,7 +115,7 @@ void main() {
 	vec3 wind1 = wind_i * fd * fr;
 
 	// pick which wind implementation we want to use
-	vec3 wind = USING_WIND ? wind1 : wind0;
+	vec3 wind = bool(USING_WIND_ID) ? wind1 : wind0;
 
 	// total force
 	vec3 total_force = deltaTime * (gravity + recovery + wind);
