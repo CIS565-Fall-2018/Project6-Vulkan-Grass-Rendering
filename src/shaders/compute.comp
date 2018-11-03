@@ -57,19 +57,137 @@ bool inBounds(float value, float bounds) {
 
 void main() {
 	// Reset the number of blades to 0
-	if (gl_GlobalInvocationID.x == 0) {
+	uint idx = gl_GlobalInvocationID.x;
+	if (idx == 0) {
 		numBlades.vertexCount = 0;
 	}
 	barrier(); // Wait till all threads reach this point
 
-    // TODO: Apply forces on every blade and update the vertices in the buffer
-	uint atomic = atomicAdd(numBlades.vertexCount, 1);
-	culledBlades[atomic] = blades[gl_GlobalInvocationID.x];
+	// create variables for ease of use
+	Blade grass = blades[idx];
+	vec3 v0 = vec3(grass.v0);
+	vec3 v1 = vec3(grass.v1);
+	vec3 v2 = vec3(grass.v2);
+	vec3 up = vec3(grass.up);
+	float angle = grass.v0.w;
+	float height = grass.v1.w;
+	float width = grass.v2.w;
+	float stiffness = grass.up.w;
+	vec3 rotation = vec3(cos(angle), 0, sin(angle));
+	vec3 direction = normalize(cross(up, rotation));
 
-	// TODO: Cull blades that are too far away or not in the camera frustum and write them
+	// constant variables
+	float GRAVITY = 10.0;
+	vec3 WIND = vec3(sin(totalTime) * 15.0, 0, mod(totalTime, 10));
+	float CURVATURE = 0.05;
+	bool CULL_BY_ORIENTATION = true;
+	float ORIENTATION_THRESHOLD = 0.1;
+	bool CULL_BY_FRUSTUM = true;
+	float FRUSTUM_THRESHOLD = 0.09;
+	bool CULL_BY_DISTANCE = true;
+	float DISTANCE_THRESHOLD = 100.0;
+	int NUM_BUCKETS_FOR_DISTANCE = 15;
+
+    // TODO: Apply forces on every blade and update the vertices in the buffer
+	// gravity = actual gravity + gravity in direction
+	vec3 gravity = vec3(0, -GRAVITY, 0) + (GRAVITY * direction * 0.25);
+
+	// recovery
+	vec3 init = v0 + up * height;
+	vec3 recovery = (init - v2) * stiffness;
+
+	// wind
+	vec3 wind_direction = normalize(WIND);
+	float strength_in_direction = dot(wind_direction, normalize(v2 - v0));
+	float direction_alignment = 1 - abs(strength_in_direction);
+	float wind_alignment = direction_alignment * dot((v2 - v0), up) / height;
+	vec3 wind = WIND * wind_alignment;
+
+	// total force
+	vec3 total_force = deltaTime * (gravity + recovery + wind);
+
+	// clamp to ground
+	v2 += total_force;
+	v2 -= up * min(dot(up, v2 - v0), 0);
+
+	// clamp v1 > v0
+	vec3 projection = v2 - v0 - up * dot(v2 - v0, up);
+	float l_projection = length(projection);
+	float curve = max(1 - l_projection / height, CURVATURE * max(l_projection / height, 1));
+	v1 = v0 + height * up * curve;
+
+	// clamp grass length
+	float len_20 = length(v2 - v0);
+	float len_21 = length(v2 - v1);
+	float len_10 = length(v1 - v0);
+	float leg0 = len_20;
+	float leg1 = len_21 + len_10;
+	float leg = (2.0 * leg0 + leg1) / 3.0;
+	float r = height / leg;
+	vec3 temp = v0 + r * (v1 - v0);
+	grass.v1.xyz = temp;
+	grass.v2.xyz = temp + r * (v2 - v1);
+
+	// update this blade
+	blades[idx] = grass;
+
+	// DONE: Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
+	
+	// dont render grass within the angle threshold of look vector
+	if (CULL_BY_ORIENTATION) {
+		vec4 camera_Z = normalize(inverse(camera.view) * vec4(0, 0, 1, 0));
+		if (abs(dot(vec3(camera_Z), direction)) < ORIENTATION_THRESHOLD) { return; }
+	}
+	
+	// points to ndc before comparing
+	if (CULL_BY_FRUSTUM) {
+		mat4 view_proj = camera.proj * camera.view;
+		vec4 ndc_v0 = view_proj * vec4(v0, 1);
+		vec4 ndc_v2 = view_proj * vec4(v2, 1);
+
+		// midpoint
+		vec4 ndc_mid = view_proj * vec4(0.25 * (v0 + v1 + v2), 1);
+
+		// bounds check
+		float v0_w_check = ndc_v0.w + FRUSTUM_THRESHOLD;
+		float v2_w_check = ndc_v2.w + FRUSTUM_THRESHOLD;
+		float mid_w_check = ndc_mid.w + FRUSTUM_THRESHOLD;
+
+		bool v0_valid = ndc_v0.x >= -v0_w_check && ndc_v0.x <= v0_w_check
+					 && ndc_v0.y >= -v0_w_check && ndc_v0.y <= v0_w_check
+					 && ndc_v0.z >= -v0_w_check && ndc_v0.z <= v0_w_check;
+
+	    bool v2_valid = ndc_v2.x >= -v2_w_check && ndc_v2.x <= v2_w_check
+					 && ndc_v2.y >= -v2_w_check && ndc_v2.y <= v2_w_check
+					 && ndc_v2.z >= -v2_w_check && ndc_v2.z <= v2_w_check;
+
+		bool mid_valid = ndc_mid.x >= -mid_w_check && ndc_mid.x <= mid_w_check
+					  && ndc_mid.y >= -mid_w_check && ndc_mid.y <= mid_w_check
+					  && ndc_mid.z >= -mid_w_check && ndc_mid.z <= mid_w_check;
+
+		if (!v0_valid && !v2_valid && !mid_valid) { return; }
+	}
+
+	// remove more blades the farther away the blades are
+	// buckets based on distance
+	if (CULL_BY_DISTANCE) {
+		vec3 camera_Z = vec3(normalize(inverse(camera.view) * vec4(0, 0, 0, 1)));
+		float projected_distance = length(v0 - camera_Z - up * dot(v0 - camera_Z, up));
+		if (projected_distance > DISTANCE_THRESHOLD) { return; }
+
+		// find appropriate buckets for each blade based on distances
+		float on_bucket = int(floor(projected_distance / (DISTANCE_THRESHOLD / NUM_BUCKETS_FOR_DISTANCE)));
+		
+		// remove randomly based on bucket. the closer the fewer removed. the farther the more removed.
+		// pseudo-random-noise function - perlin style
+		float noise = fract(sin(dot(vec2(on_bucket, projected_distance),
+								   vec2(12.9898, 78.233))) * 43758.5453);
+		if (noise > (1.0 - on_bucket / NUM_BUCKETS_FOR_DISTANCE)) { return; }
+	}
+	
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
-
-	
+	uint atomic = atomicAdd(numBlades.vertexCount, 1);
+	culledBlades[atomic] = blades[gl_GlobalInvocationID.x];
 }
