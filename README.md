@@ -20,11 +20,11 @@ In this project, I implemented a grass simulator and renderer using Vulkan. The 
 ### Compute 
 I use a compute shader to perform physics calculations (gravity, wind, etc..) on Bezier curves that represent individual grass blades. I also use this to perform culling optimizations: based on distance, orientation, and the view-frustum.
 
-### Tesselation
-To generate grass vertices, I tesselate the grass blade using a quad based on how far it is from the camera. **A blade is more detailed the closer it is**. 
+### Tessellation
+To generate grass vertices, I tessellate the grass blade using a quad based on how far it is from the camera. **A blade is more detailed the closer it is**. 
 
 ### Rendering
-After a grass is tesselated, I compute a fragments lerped values in the evaluation tesselation phase. After that, I perform simple lambert shading on each fragment.
+After a grass is tessellated, I compute a fragments lerped values in the evaluation tesselation phase. After that, I perform simple lambert shading on each fragment.
 
 ### Contents
 
