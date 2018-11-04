@@ -1,6 +1,8 @@
 TODO
 
 - do set up on vulkan side
+    - remember to deallocate
+    - test shit?
 - write shader to render basic grass
     write dummy compute shader that just outputs all blades without doing anything to them
     figure out what to do in vertex shader
@@ -20,3 +22,11 @@ questions
     - what's the descriptor set for blades's numBladesBuffer?
 - CreateGrassDescriptorSets()
     - what layout to use for grass?
+- in CreateDescriptorPool, is the size of the compute pool the total number of blades?
+- difference between storage and uniform buffer
+
+- general idea:
+    - to use something in the compute shader
+        - in CreateComputeDescriptorSetLayout(), bind the 3 types of data 
+        - in CreateComputeDescriptorSets(), bind the resources to the descriptor
+        - then pass it in when it's time to do the computeGraphicsPipeline
