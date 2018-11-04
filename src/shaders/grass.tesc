@@ -22,12 +22,10 @@ void main() {
 	// Don't move the origin location of the patch
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 
-	// TODO: Write any shader outputs
 	out_v0[gl_InvocationID] = in_v0[gl_InvocationID];
 	out_v1[gl_InvocationID] = in_v1[gl_InvocationID];
 	out_v2[gl_InvocationID] = in_v2[gl_InvocationID];
 
-	// TODO: Set level of tesselation
     // gl_TessLevelInner[0] = ???
     // gl_TessLevelInner[1] = ???
     // gl_TessLevelOuter[0] = ???
