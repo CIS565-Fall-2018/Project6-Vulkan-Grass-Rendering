@@ -16,8 +16,13 @@ layout(location = 0) out vec4 outColor;
 void main() 
 {
     // TODO: Compute fragment color
-	vec3 grassColor = vec3(0.0, 1.0, 0.0);
+	vec3 grassColor = vec3(0.23, 0.8, 0.47);
     
 	// need light pos to do lamberts
-	outColor = vec4(grassColor, 1.0);
+	vec3 lightVec = vec3(0.0, 1.0, -1.0);
+	vec3 ambient = vec3(0.1, 0.1, 0.1);
+	float lambert = clamp(dot(lightVec, in_normal), 0.3, 1.0);
+
+	vec3 shadedColor = grassColor * lambert + ambient;
+	outColor = vec4(shadedColor, 1.0);
 }
