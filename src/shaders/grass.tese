@@ -29,34 +29,34 @@ void main()
 	float orientation = v0.w;
 	float width = v2.w;
 
-	vec4 a = v0 + v * (v1 - v0);
-	vec4 b = v1 + v * (v2 - v1);
-	vec4 c = a + v * (b - a);
+	vec3 a = vec3(v0 + v * (v1 - v0));
+	vec3 b = vec3(v1 + v * (v2 - v1));
+	vec3 c = a + v * (b - a);
 
 	// tangent
-	vec4 t0 = normalize(b - a);
+	vec3 t0 = normalize(b - a);
 
 	// bitangent - i am assuming it is perpendicular to grass plane
 	float z = cos(orientation); // sin(90 - orientation)
 	float x = sin(orientation); // cos(90 - orientation)
 	float y = 0.0;// ???
-	vec4 t1 = vec4(x, 0.0, z);
+	vec3 t1 = vec3(x, 0.0, z);
 
-	vec4 c0 = c - width * t1;
-	vec4 c1 = c + width * t1;
+	vec3 c0 = c - width * t1;
+	vec3 c1 = c + width * t1;
 
-	vec4 normal = normalize(cross(t0, t1));
+	vec3 normal = normalize(cross(t0, t1));
 
 	// TODO: Which one to use?
-	float t = u; // quad
-	//float t = u + 0.5 * v - u * v; // Triangle interpolation
+	//float t = u; // quad
+	float t = u + 0.5 * v - u * v; // Triangle interpolation
 	//float t = u - u * v * v; // QUadratic
 
-	vec4 pos = (1 - t) * c0 + t * c1;
+	vec3 pos = (1 - t) * c0 + t * c1;
 
 	out_pos = camera.proj * camera.view * vec4(pos, 1.0);
 	out_normal = normal;
-	out_tex = vec3(u, v);
+	out_tex = vec2(u, v);
 
-	gl_Position = camera.out_pos;
+	gl_Position = out_pos;
 }

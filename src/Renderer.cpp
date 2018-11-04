@@ -224,17 +224,9 @@ void Renderer::CreateComputeDescriptorSetLayout() {
     // Remember this is like a class definition stating why types of information
     // will be stored at each binding
 
-    // Numblades
-    VkDescriptorSetLayoutBinding numBladesDescriptorSet = {};
-    numBladesDescriptorSet.binding = 0;
-    numBladesDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    numBladesDescriptorSet.descriptorCount = 1;
-    numBladesDescriptorSet.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-    numBladesDescriptorSet.pImmutableSamplers = nullptr;
-
     // InputBlades
     VkDescriptorSetLayoutBinding inputBladesDescriptorSet = {};
-    inputBladesDescriptorSet.binding = 1;
+    inputBladesDescriptorSet.binding = 0;
     inputBladesDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     inputBladesDescriptorSet.descriptorCount = 1;
     inputBladesDescriptorSet.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
@@ -242,13 +234,21 @@ void Renderer::CreateComputeDescriptorSetLayout() {
 
     // CulledBlades
     VkDescriptorSetLayoutBinding culledBladesDescriptorSet = {};
-    culledBladesDescriptorSet.binding = 2;
+    culledBladesDescriptorSet.binding = 1;
     culledBladesDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     culledBladesDescriptorSet.descriptorCount = 1;
     culledBladesDescriptorSet.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
     culledBladesDescriptorSet.pImmutableSamplers = nullptr;
 
-    std::vector<VkDescriptorSetLayoutBinding> bindings = { numBladesDescriptorSet,  inputBladesDescriptorSet, culledBladesDescriptorSet};
+    // Numblades
+    VkDescriptorSetLayoutBinding numBladesDescriptorSet = {};
+    numBladesDescriptorSet.binding = 2;
+    numBladesDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    numBladesDescriptorSet.descriptorCount = 1;
+    numBladesDescriptorSet.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+    numBladesDescriptorSet.pImmutableSamplers = nullptr;
+
+    std::vector<VkDescriptorSetLayoutBinding> bindings = { inputBladesDescriptorSet, culledBladesDescriptorSet, numBladesDescriptorSet};
 
     // Create the descriptor set layout
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
@@ -257,7 +257,7 @@ void Renderer::CreateComputeDescriptorSetLayout() {
     layoutInfo.pBindings = bindings.data();
 
     if (vkCreateDescriptorSetLayout(logicalDevice, &layoutInfo, nullptr, &computeDescriptorSetLayout) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create descriptor set layout For blades");
+        throw std::runtime_error("Failed to create descriptor set layout");
     }
 }
 
@@ -404,7 +404,7 @@ void Renderer::CreateGrassDescriptorSets() {
     for (uint32_t i = 0; i < scene->GetBlades().size(); ++i) 
     {
         VkDescriptorBufferInfo bladeBufferInfo = {};
-        bladeBufferInfo.buffer = scene->GetModels()[i]->GetModelBuffer();
+        bladeBufferInfo.buffer = scene->GetBlades()[i]->GetModelBuffer();
         bladeBufferInfo.offset = 0;
         bladeBufferInfo.range = sizeof(ModelBufferObject);
 
@@ -1154,7 +1154,7 @@ void Renderer::RecordCommandBuffers() {
             vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
             // Bind the descriptor set for each grass blades model
-            vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 1, 1, &grassDescriptorSets[j], 0, nullptr);
+            vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, grassPipelineLayout, 1, 1, &grassDescriptorSets[j], 0, nullptr);
 
             // Draw
             // Uncomment this when the buffers are populated
