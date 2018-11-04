@@ -58,9 +58,11 @@ Similarly to orientation culling, we can end up with grass blades that at large 
 
 ## Performance Analysis
 
-The performance analysis is where you will investigate how...
-* Your renderer handles varying numbers of grass blades
-* The improvement you get by culling using each of the three culling tests
+Below is a graph that showcases the different results obtained by the simulation for different paramters (types of optimizations, and number of input grass blades)
+
+<p align="center"><img width="900" height="550" src="https://github.com/ziedbha/Project6-Vulkan-Grass-Rendering/blob/master/img/graph.png"/></p>
+
+It is clear that for best results (and for most cases), it is better to enable all optimizations. We notice a significant drop in performance as we disable all optimizations. It seems that the biggest gain in performance comes from distance culling.
 
 ## Credits
 
