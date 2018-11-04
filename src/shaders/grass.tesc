@@ -8,7 +8,7 @@ layout(set = 0, binding = 0) uniform CameraBufferObject {
     mat4 proj;
 } camera;
 
-// TODO: Declare tessellation control shader inputs and outputs
+// Declare tessellation control shader inputs and outputs
 layout(location = 0) in vec4 in_v0[];
 layout(location = 1) in vec4 in_v1[];
 layout(location = 2) in vec4 in_v2[];

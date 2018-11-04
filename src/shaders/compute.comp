@@ -21,22 +21,20 @@ struct Blade {
     vec4 up;
 };
 
-// TODO: Add bindings to:
 // 1. Store the input blades
+layout(set = 2, binding = 0) buffer InputBlades
+{
+	Blade inputBlades[];
+};
+
 // 2. Write out the culled blades
+layout(set = 2, binding = 1) buffer CulledBlades
+{
+	Blade culledBlades[];
+};
+
 // 3. Write the total number of blades remaining
-
-// The project is using vkCmdDrawIndirect to use a buffer as the arguments for a draw call
-// This is sort of an advanced feature so we've showed you what this buffer should look like
-//
-// layout(set = ???, binding = ???) buffer NumBlades {
-// 	  uint vertexCount;   // Write the number of blades remaining here
-// 	  uint instanceCount; // = 1
-// 	  uint firstVertex;   // = 0
-// 	  uint firstInstance; // = 0
-// } numBlades;
-
-layout(set = 2, binding = 0) buffer NumBlades 
+layout(set = 2, binding = 2) buffer NumBlades 
 {
  	uint vertexCount;   // Write the number of blades remaining here
  	uint instanceCount; // = 1
@@ -44,31 +42,65 @@ layout(set = 2, binding = 0) buffer NumBlades
  	uint firstInstance; // = 0
 } numBlades;
 
-layout(set = 2, binding = 1) buffer InputBlades
-{
-	Blade inputBlades[];
-}
-
-layout(set = 2, binding = 2) buffer CulledBlades
-{
-	Blade culledBlades[];
-}
-
 bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
 }
 
-void main() {
+bool inBoundsVec(vec3 v, float bounds) {
+	return inBounds(v.x, bounds) && inBounds(v.y, bounds) && inBounds(v.z, bounds);
+}
+
+void main() 
+{
+	// Similar to thread ID
+	uint index = gl_GlobalInvocationID.x;
+
 	// Reset the number of blades to 0
-	if (gl_GlobalInvocationID.x == 0) {
-		// numBlades.vertexCount = 0;
+	if (index == 0) 
+	{
+		numBlades.vertexCount = 0;
 	}
 	barrier(); // Wait till all threads reach this point
 
-    // TODO: Apply forces on every blade and update the vertices in the buffer
+    // Apply forces on every blade and update the vertices in the buffer
+	
+	Blade blade = inputBlades[index];
+	float orientation = blade.v0.w;
+	float height = blade.v1.w;
+	float width = blade.v2.w;
+	float stiffness = blade.up.w;
+
+	// Force 1: Recovery
+
+	vec3 Iv2 = blade.v0.xyz + height * (blade.up.xyz);
+	float N = 0.0; // TODO: Dont even get me started!!
+	vec3 recovery_force = (Iv2 - blade.v2.xyz) * stiffness * max(1.0 - N, 0.1);
+
+	// Force 2: Gravity
+
+	float mass = 1.0; // TODO: Do you even lift bruh??
+	flaot t = 0.0; // TODO: What the fuck is this??
+	vec4 D = vec4(0.0, -1.0, 0.0, 9.8);
+	vec4 C = vec4(0.0); // TODO: Hocus pocus
+
+	float z = cos(orientation); // sin(90 - orientation)
+	float x = sin(orientation); // cos(90 - orientation)
+	float y = 0.0;// ???
+	vec3 t = vec3(x, 0.0, z);
+
+	vec3 f = normalize(cross(blade.up.xyz, t));
+	vec3 ge = mass * (normalize(D.xyz) * D.w * (1.0 - t) + C * t);
+	vec4 gravityForce = ge + (0.25 * normalize(ge) * f);
+
+	// Force 3: Wind
+
+
+
+
 
 	// TODO: Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
+
 }
