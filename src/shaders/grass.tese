@@ -10,7 +10,7 @@ layout(set = 0, binding = 0) uniform CameraBufferObject {
 
 // TODO: Declare tessellation evaluation shader inputs and outputs
 
-layout (location = 0) patch in vec4 t_norm;
+layout (location = 0) patch in vec3 t_w;
 layout (location = 1) patch in vec4 t_v1;
 layout (location = 2) patch in vec4 t_v2;
 layout (location = 3) patch in vec4 t_up;
@@ -26,7 +26,7 @@ void main() {
 	f_uv = vec2 (u, v);
 
 	// calculate vector tangent to face to get width step vector
-	vec3 w = normalize(cross(normalize(t_up.xyz), t_norm.xyz)) * t_v2.w / 2.0;
+	vec3 w = t_w * t_v2.w / 2.0;
 
 	// recover base vertex v0
 	vec3 t_v0 = gl_in[0].gl_Position.xyz;

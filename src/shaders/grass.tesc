@@ -10,12 +10,12 @@ layout(set = 0, binding = 0) uniform CameraBufferObject {
 
 // TODO: Declare tessellation control shader inputs and outputs
 
-layout (location = 0) in vec4 v_norm[];
+layout (location = 0) in vec3 v_w[];
 layout (location = 1) in vec4 v_v1[];
 layout (location = 2) in vec4 v_v2[];
 layout (location = 3) in vec4 v_up[];
 
-layout (location = 0) patch out vec4 t_norm;
+layout (location = 0) patch out vec3 t_w;
 layout (location = 1) patch out vec4 t_v1;
 layout (location = 2) patch out vec4 t_v2;
 layout (location = 3) patch out vec4 t_up;
@@ -25,7 +25,7 @@ void main() {
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 
 	// TODO: Write any shader outputs
-	t_norm = v_norm[0];
+	t_w = v_w[0];
 	t_v1 = v_v1[0];
 	t_v2 = v_v2[0];
 	t_up = v_up[0];

@@ -41,5 +41,7 @@ public:
 
     VkBuffer GetTimeBuffer() const;
 
+	float GetDeltaTime();
+
     void UpdateTime();
 };

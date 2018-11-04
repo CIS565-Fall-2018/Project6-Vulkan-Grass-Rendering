@@ -6,6 +6,9 @@
 #include "Scene.h"
 #include "Image.h"
 
+#include <string>
+using namespace std;
+
 Device* device;
 SwapChain* swapChain;
 Renderer* renderer;
@@ -69,8 +72,8 @@ namespace {
 int main() {
     static constexpr char* applicationName = "Vulkan Grass Rendering";
 
-	int w = 640;
-	int h = 480;
+	int w = 1024;
+	int h = 768;
     InitializeWindow(w, h, applicationName);
 
     unsigned int glfwExtensionCount = 0;
@@ -94,7 +97,7 @@ int main() {
 
     swapChain = device->CreateSwapChain(surface, 5);
 
-    camera = new Camera(device, 640.f / 480.f);
+    camera = new Camera(device, float(w) / float(h));
 
     VkCommandPoolCreateInfo transferPoolInfo = {};
     transferPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -150,6 +153,8 @@ int main() {
     while (!ShouldQuit()) {
         glfwPollEvents();
         scene->UpdateTime();
+		string title = "Vulkan Grass Rendering " + to_string(scene->GetDeltaTime() * 1000.f) + " ms";
+		glfwSetWindowTitle(GetGLFWWindow(), title.c_str());
         renderer->Frame();
     }
 

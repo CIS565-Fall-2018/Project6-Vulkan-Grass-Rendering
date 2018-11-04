@@ -102,7 +102,7 @@ void main() {
 	}
 	barrier(); // Wait till all threads reach this point
 	
-	bool cull_distance = true; // debugging
+	bool cull_distance = true; // toggle distance culling, for debugging
 
 	/*  ---------------
 	 *    Load Blade
@@ -137,7 +137,7 @@ void main() {
 	 *      Gravity
 	 *  ---------------
 	 */
-	float g = 9.8; // 9.8 m/s^2
+	float g = 9.807; // 9.807 m/s^2 on Earth
 	// Global gravity direction should be straight down
 	vec3 gE = vec3(0.0, -g, 0.0);
 
@@ -197,7 +197,7 @@ void main() {
 
 		float L0 = length(v2 - v0);
 		float L1 = length(v2 - v1) + length(v1 - v0);
-		float n = 2.0;
+		float n = 2.0; // degree of curve, quadratic
 		float L = (2.0 * L0 + (n - 1.0)* L1) / (n + 1.0);
 
 		float r = h / L;
@@ -208,9 +208,6 @@ void main() {
 		v2 = v1 + r*(v2 - old_v1);
 	}
 	
-	
-	
-
 	// write updated v1 & v2 to blade data
 	blades[gl_GlobalInvocationID.x].v1 = vec4(v1, h);
 	blades[gl_GlobalInvocationID.x].v2 = vec4(v2, w);
@@ -245,17 +242,21 @@ void main() {
 	// for debugging and adjustment purposes, made optional
 	// toggle is at top of main
 	if (cull_distance) {
-	int num_bins = 10;
-	float step = 2.0;
-	vec4 v_v0 = camera.view * vec4(v0, 1.0);
-	z = -v_v0.z;
+		int num_bins = 10;
+		float step = 2.0; // change bin size here
+		vec4 v_v0 = camera.view * vec4(v0, 1.0);
+		z = -v_v0.z;
 
-	// near and far clip planes
-	if (z > 100.0 || z < 0.1) d_cull_pass = false;
-	if (z > (num_bins * step) + 0.1) d_cull_pass = false;
+		// near and far clip planes
+		if (z > 100.0 || z < 0.1) d_cull_pass = false;
+		// cull if beyond furthest bin
+		if (z > (num_bins * step) + 0.1) d_cull_pass = false;
 
-	int bin = int(floor((z - 0.1) / step));
-	if (gl_GlobalInvocationID.x % bin > 1.0) d_cull_pass = false;
+		// select bin, making sure not to divide by zero
+		int bin = int(floor((z - 0.1) / step)) + 1;
+		if (d_cull_pass == true) {
+			if (gl_GlobalInvocationID.x % bin > 1.0) d_cull_pass = false;
+		}
 	}
 
 	/*  ---------------
