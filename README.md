@@ -87,6 +87,17 @@ No Culling | Frustum and Distance Culling
 
 Culling is done to optimize different scene's runtime by removing unnecessary elements from the visual without affecting the quality of the scene.
 
+`Used 2^20 blades instead of the project's original 2^30 to better demo improvements in speed.`
+
+![](./img/my_images/fps_culling.png)
+
+This chart demonstrates the importance in culling and how it radically improves runtime based on distances. In the `no culling` instance, there is little improvement the farther away the shapes are, yet there is a drastic improvement (due to our distance culling feature) in the `orientation & frustum & distance culling` instance. Additionally, `near` for this instance is also much more optimized, because of `frustum` culling, since there are fewer blades within the camera's frame of view to be cycled through the pipeline in the first place. Thus we have drastic improvements for `near` and `far`. Middle is mostly optimized through `orientation` culling, because the `frustum` still contains most of the blades and most of the blades are within a close enough distance that `distance` culling does not remove many of them.
+
+`*` The below comparisons are done from a medium distance (the camera's original location) to provide the most even comparison between them. not too close and not too far.
+![](./img/my_images/fps_culling_techniques.png)
+
+Since we're at a medium distance, `frustum` culling won't remove too many items from screen as we have most of them in our camera's pov. Additionally `distance` still culls the most by itself (thus improving runtime the most) because of its "buckets" notion, in that even if the camera is close to the scene, there are still blades randomly removed within a specific distance from the camera to thin out the blades the farther away they get. Thus, even though we're a medium distance from the blades, there's still randomized culling at the back of the scene. `Orientation` just depends on the number of blades in the scene, because it depends on the probability that a certain number of blades will be orientated to face perpendicularly to the camera's line of site (making them invisible, so we dont render them). If we increase the number of blades, then `orientation` will actually be one of the more influential culling techniques. Finally `orientation & frustum & distance` culling when used together creates a scene much faster than just no `culling` in general since it removes a lot of blades from the overall pipeline, speeding up calculations and shortening its overall number of steps.
+
 ### Shading
 
 #### Tesselation Shader
