@@ -219,8 +219,6 @@ void Renderer::CreateTimeDescriptorSetLayout() {
     }
 }
 
-
-
 void Renderer::CreateComputeDescriptorSetLayout() {
     // Create the descriptor set layout for the compute pipeline
     // Remember this is like a class definition stating why types of information

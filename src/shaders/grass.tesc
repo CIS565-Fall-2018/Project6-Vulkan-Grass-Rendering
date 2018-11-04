@@ -36,9 +36,9 @@ void main() {
 	// Test Tesselation
 	gl_TessLevelInner[0] = 2.0; // Horizontal
 	gl_TessLevelInner[1] = 2.0; // Vertical
-	gl_TessLevelOuter[0] = 2.0; // edge 0~3
-	gl_TessLevelOuter[1] = 2.0; // edge 3~2
-	gl_TessLevelOuter[2] = 2.0; // edge 2~1
-	gl_TessLevelOuter[3] = 2.0; // edge 1~0
+	gl_TessLevelOuter[0] = 15.0; // edge 0~3
+	gl_TessLevelOuter[1] = 15.0; // edge 3~2
+	gl_TessLevelOuter[2] = 15.0; // edge 2~1
+	gl_TessLevelOuter[3] = 15.0; // edge 1~0
 
 }

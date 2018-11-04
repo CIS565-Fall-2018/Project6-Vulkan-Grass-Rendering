@@ -30,5 +30,4 @@ void main()
 
 	// v0.w holds the orientation
 	gl_Position = model * vec4(v0.xyz, 1.0);
-	//gl_Position = vec4(v0.xyz, 1.0);
 }

@@ -46,6 +46,11 @@ bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
 }
 
+bool inBounds2(vec3 vectorVal, float bounds) 
+{
+    return (inBounds(vectorVal.x, bounds) && inBounds(vectorVal.y, bounds) && inBounds(vectorVal.z, bounds));
+}
+
 void main() 
 {
 	// Similar to thread ID
@@ -123,18 +128,43 @@ void main()
 	inputBlades[index] = blade;
 
 	// Orientation Culling
-	mat4 inverseTransform = inverse(camera.proj * camera.view);
-	vec4 cameraPos = normalize(inverseTransform * vec4(0.0, 0.0, 1.0, 0.0));
-	float rotation = dot(f, cameraPos.xyz);
-	bool shouldCull = abs(rotation) < 0.9;
+	mat4 inverseTransform = inverse(camera.view);
+	vec3 cameraVec = normalize(v0 - inverseTransform[3].xyz);
+	bool dontOrientCull = abs(dot(f, cameraVec)) > 0.9f;
 
-	// TODO: Cull blades that are too far away or not in the camera frustum and write them
-	// to the culled blades buffer
-	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
-	// You want to write the visible blades to the buffer without write conflicts between threads
+	// View Frustrum Culling
+	mat4 VP = camera.proj * camera.view;
+	float h = 1.01;
 
+	// Testing v0
+	vec4 p_v0 = VP * vec4(v0, 1.0);
+	p_v0 /= p_v0.w;
+	bool isV0InBounds = inBounds2(p_v0.xyz, h);
 
-	if(shouldCull)
+	// Testing m
+	vec3 m = 0.25 * v0 + 0.5 * v1_correct + 0.25 * v2_correct;
+	vec4 p_m = VP * vec4(m, 1.0);
+	p_m /= p_m.w;
+	bool isMInBounds = inBounds2(p_m.xyz, h);
+
+	// Testing v2
+	vec4 p_v2 = VP * vec4(v0, 1.0);
+	p_v2 /= p_v2.w;
+	bool isV2InBounds = inBounds2(p_v2.xyz, h);
+
+	bool dontFrustrumCull = !(isV0InBounds || isMInBounds || isV2InBounds);
+
+	// Distance Culling
+	float dmax = 20.0;
+	float nBlades = 30;
+
+	vec3 c = mat3(inverseTransform) * (-camera.view[3].xyz);
+	float dproj = length(v0 - c - up * (dot(v0 - c, up)));
+
+	float X = floor(nBlades * (1.0 - dproj/dmax));
+	bool dontDistanceCull = X < (mod(index, nBlades));
+	
+	if(!dontOrientCull && !dontFrustrumCull && !dontDistanceCull)
 	{
 		culledBlades[atomicAdd(numBlades.vertexCount, 1)] = inputBlades[index];
 	}
