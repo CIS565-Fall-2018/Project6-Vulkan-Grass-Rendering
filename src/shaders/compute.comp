@@ -69,33 +69,46 @@ void main()
 	float height = blade.v1.w;
 	float width = blade.v2.w;
 	float stiffness = blade.up.w;
+	vec3 up = blade.up.xyz;
+	vec3 v0 = blade.v0.xyz;
+	vec3 v1 = blade.v1.xyz;
+	vec3 v2 = blade.v2.xyz;
 
 	// Force 1: Recovery
 
-	vec3 Iv2 = blade.v0.xyz + height * (blade.up.xyz);
+	vec3 Iv2 = v0 + height * (up);
 	float N = 0.0; // TODO: Dont even get me started!!
-	vec3 recovery_force = (Iv2 - blade.v2.xyz) * stiffness * max(1.0 - N, 0.1);
+	vec3 recoveryForce = (Iv2 - v2) * stiffness * max(1.0 - N, 0.1);
 
 	// Force 2: Gravity
 
 	float mass = 1.0; // TODO: Do you even lift bruh??
-	flaot t = 0.0; // TODO: What the fuck is this??
+	float t = 0.0; // TODO: What the fuck is this??
 	vec4 D = vec4(0.0, -1.0, 0.0, 9.8);
-	vec4 C = vec4(0.0); // TODO: Hocus pocus
+	vec3 C = vec3(0.0); // TODO: Hocus pocus
 
 	float z = cos(orientation); // sin(90 - orientation)
 	float x = sin(orientation); // cos(90 - orientation)
 	float y = 0.0;// ???
-	vec3 t = vec3(x, 0.0, z);
+	vec3 bit = vec3(x, 0.0, z);
 
-	vec3 f = normalize(cross(blade.up.xyz, t));
+	vec3 f = normalize(cross(up, bit));
 	vec3 ge = mass * (normalize(D.xyz) * D.w * (1.0 - t) + C * t);
-	vec4 gravityForce = ge + (0.25 * normalize(ge) * f);
+	vec3 gravityForce = ge + (0.25 * normalize(ge) * f);
 
 	// Force 3: Wind
+	vec3 wi_v0 = vec3(1.0, 0.0, 0.0); // Sample Wind force
+	vec3 v2_v0 = v2 - v0;
+	float fd = 1.0 - abs(dot(normalize(wi_v0), normalize(v2 - v0)));
+	float fr = dot(v2_v0, up) / height;
+	float theta = fd * fr;
+	vec3 windForce = wi_v0 * theta;
 
+	// Update Pos of v2
+	vec3 new_v2 = v2 + (recoveryForce + gravityForce + windForce) * deltaTime;
 
-
+	// State Validation
+	new_v2 = new_v2 - up * min(dot(up, new_v2 - v0), 0.0);
 
 
 	// TODO: Cull blades that are too far away or not in the camera frustum and write them
