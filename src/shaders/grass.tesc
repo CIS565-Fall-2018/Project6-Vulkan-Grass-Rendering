@@ -24,17 +24,19 @@ void main() {
 	// Don't move the origin location of the patch
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 
-	// TODO: Write any shader outputs
+	// Write shader outputs
 	t_w = v_w[0];
 	t_v1 = v_v1[0];
 	t_v2 = v_v2[0];
 	t_up = v_up[0];
 
-	// TODO: Set level of tesselation
+	// Set level of tesselation
+	float n = 5.0;
+
     gl_TessLevelInner[0] = 1.0;
-    gl_TessLevelInner[1] = 5.0;
-    gl_TessLevelOuter[0] = 5.0;
+    gl_TessLevelInner[1] = n;
+    gl_TessLevelOuter[0] = n;
     gl_TessLevelOuter[1] = 1.0;
-    gl_TessLevelOuter[2] = 5.0;
+    gl_TessLevelOuter[2] = n;
     gl_TessLevelOuter[3] = 1.0;
 }

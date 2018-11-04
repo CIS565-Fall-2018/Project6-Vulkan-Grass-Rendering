@@ -92,7 +92,7 @@ For a smoother transition, more bins and smaller step sizes could be used. The m
   
   
 ## Physics Modelling
-    
+  
 ### Gravity  
   
 ![Gravity](img/JustGravity.png)
@@ -119,6 +119,8 @@ vec3 R = ((v0 + h * up) - v2) * stiff;
 ```
   
 ### Wind  
+  
+![Wind + Recovery + Gravity](img/Physics.gif)
   
 Air naturally circulates due to pressure and heat variations. This disturbance will move the light grass with some force dependent on the wind speed (it's strength) and  the direction. If the face of the grass blade is angled compared to the wind direction, the force on the blade is reduced.  
 The wind generally has a prevailing direction with some fluctuation in time, and a strength also fluctuating in time. These are modelled with sinusoidal signals of different frequencies.    
@@ -152,7 +154,9 @@ v2 += shift;
   
 ### Position Validation  
   
-After applying the physical transformations, the grass blade may not be in an acceptable position state. It's tip, v2, may sink below ground, and without adjustment of the control point, v1, the blade will not have consistent length.  
+![Validated](img/PosValidated.png)
+  
+After applying the physical transformations, the grass blade may not be in an acceptable position state. It's tip, v2, may sink below ground, and without adjustment of the control point, v1, the blade will not have consistent length. When properly corrected, the blade looks less hunched over and more consistent in length.  
 First, the position of v2 is corrected to be at or above ground level, assuming v0 to be ground.  
 ```cpp
 // keep v2 from going underground

@@ -176,6 +176,7 @@ void main() {
 	 */
 	vec3 shift = (R + gF + gE + Wind) * deltaTime;
 	//vec3 shift = (R + gF + gE) * deltaTime;
+	//vec3 shift = (Wind + R) * deltaTime;
 
 	// adjust v2 position
 	v2 += shift;
