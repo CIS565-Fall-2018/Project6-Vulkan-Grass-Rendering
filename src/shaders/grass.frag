@@ -18,7 +18,7 @@ void main() {
 	vec3 lightDirection = normalize(pos - lightPosition);
 
 	vec3 ambientColor = vec3(1.0f, 1.0f, 1.0f);
-	vec3 specColor = vec3(1.0f, 1.0f, 1.0f);
+	vec3 specColor = vec3(0.01f, 0.52f, 0.05f);
 	vec3 grassColor = vec3(0.01f, 0.325f, 0.01f);
 
 	vec3 L = -lightDirection;   
