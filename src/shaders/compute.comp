@@ -46,10 +46,6 @@ bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
 }
 
-bool inBoundsVec(vec3 v, float bounds) {
-	return inBounds(v.x, bounds) && inBounds(v.y, bounds) && inBounds(v.z, bounds);
-}
-
 void main() 
 {
 	// Similar to thread ID
@@ -124,9 +120,22 @@ void main()
 
 	blade.v1 = vec4(v1_correct, height);
 	blade.v2 = vec4(v2_correct, width);
+	inputBlades[index] = blade;
+
+	// Orientation Culling
+	mat4 inverseTransform = inverse(camera.proj * camera.view);
+	vec4 cameraPos = normalize(inverseTransform * vec4(0.0, 0.0, 1.0, 0.0));
+	float rotation = dot(f, cameraPos.xyz);
+	bool shouldCull = abs(rotation) < 0.9;
 
 	// TODO: Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
+
+
+	if(shouldCull)
+	{
+		culledBlades[atomicAdd(numBlades.vertexCount, 1)] = inputBlades[index];
+	}
 }
