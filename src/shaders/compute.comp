@@ -75,13 +75,11 @@ void main()
 	vec3 v2 = blade.v2.xyz;
 
 	// Force 1: Recovery
-
 	vec3 Iv2 = v0 + height * (up);
 	float N = 0.0; // TODO: Dont even get me started!!
 	vec3 recoveryForce = (Iv2 - v2) * stiffness * max(1.0 - N, 0.1);
 
 	// Force 2: Gravity
-
 	float mass = 1.0; // TODO: Do you even lift bruh??
 	float t = 0.0; // TODO: What the fuck is this??
 	vec4 D = vec4(0.0, -1.0, 0.0, 9.8);
@@ -109,11 +107,26 @@ void main()
 
 	// State Validation
 	new_v2 = new_v2 - up * min(dot(up, new_v2 - v0), 0.0);
+	float lproj = length(new_v2 - v0 - up * dot(new_v2 - v0, up));
+	float temp_ratio = lproj/height;
+	// Ensures that grass is slightly curved
+	vec3 new_v1 = v0 + height * up * max(1.0 - temp_ratio, 0.05 * max(temp_ratio, 1.0)); 
+	// Ensure length if bezier curve is not larger than height of grass
+	float L0 = length(new_v2 - v0);
+	float L1 = length(new_v1 - new_v2) + length(v0 - new_v1);
+	float degree = 2.0; // Quadratic
+	float L = (2.0 * L0  + (degree - 1) * L1) / (degree + 1);
 
+	// Corrected Positions
+	float r = height / L;
+	vec3 v1_correct = v0 + r * (new_v1 - v0);
+	vec3 v2_correct = v1_correct + r * (new_v2 - new_v1);
+
+	blade.v1 = vec4(v1_correct, height);
+	blade.v2 = vec4(v2_correct, width);
 
 	// TODO: Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
-
 }
