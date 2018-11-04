@@ -1,0 +1,22 @@
+TODO
+
+- do set up on vulkan side
+- write shader to render basic grass
+    write dummy compute shader that just outputs all blades without doing anything to them
+    figure out what to do in vertex shader
+    figure out how to tessellate bezier curve into grass in tesselation shader
+    figure out how to shade grass in fragment shater
+- implement gravity for grass
+- implement wind for grass
+- implement culling optimization
+
+
+questions
+- how to pass 3 points of the bezier curve into vertex shader?
+    - vertex shader only handles one vertex right? so do we also pass in an int that clarifies if this is vertex 1 2 or 3?
+- RecordComputeCommandBuffer()
+    - vkCmdDispatch 1 or 3 threads per grass blades group?
+- CreateComputeDescriptorSets()
+    - what's the descriptor set for blades's numBladesBuffer?
+- CreateGrassDescriptorSets()
+    - what layout to use for grass?
