@@ -26,19 +26,24 @@ void main() {
 	out_v1[gl_InvocationID] = in_v1[gl_InvocationID];
 	out_v2[gl_InvocationID] = in_v2[gl_InvocationID];
 
-    // gl_TessLevelInner[0] = ???
-    // gl_TessLevelInner[1] = ???
-    // gl_TessLevelOuter[0] = ???
-    // gl_TessLevelOuter[1] = ???
-    // gl_TessLevelOuter[2] = ???
-    // gl_TessLevelOuter[3] = ???
+	mat4 inverseTransform = inverse(camera.view);
+	vec3 c = mat3(inverseTransform) * (-camera.view[3].xyz);
+	vec3 up = in_Up[gl_InvocationID].xyz;
+	vec3 v0 = in_v0[gl_InvocationID].xyz;
+	float distanceFromGeom = length(v0 - c - up * (dot(v0 - c, up)));
+
+	float minLevel = 2.0;
+	float maxLevel = 15.0;
+	
+	float mixRatio = distanceFromGeom / 10.0;
+	float currLevel = mix(maxLevel, minLevel, clamp(mixRatio, 0.0, 1.0));
 
 	// Test Tesselation
 	gl_TessLevelInner[0] = 2.0; // Horizontal
 	gl_TessLevelInner[1] = 2.0; // Vertical
-	gl_TessLevelOuter[0] = 15.0; // edge 0~3
-	gl_TessLevelOuter[1] = 15.0; // edge 3~2
-	gl_TessLevelOuter[2] = 15.0; // edge 2~1
-	gl_TessLevelOuter[3] = 15.0; // edge 1~0
+	gl_TessLevelOuter[0] = currLevel; // edge 0~3
+	gl_TessLevelOuter[1] = 1.0; // edge 3~2
+	gl_TessLevelOuter[2] = currLevel; // edge 2~1
+	gl_TessLevelOuter[3] = 1.0; // edge 1~0
 
 }
