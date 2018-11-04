@@ -24,6 +24,9 @@ Analysis
 
 * Orientation culling threshold is 0.2.
 
+* This project is based on the paper (Responsive Real-Time Grass Rendering for General 3D Scenes
+)[https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf].
+
 ---
 
 ## 1. 8192 (2^13) grass blades
