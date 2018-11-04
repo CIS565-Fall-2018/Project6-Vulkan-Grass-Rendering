@@ -5,11 +5,18 @@
 #include "Camera.h"
 #include "Scene.h"
 #include "Image.h"
+#include <sstream>
 
 Device* device;
 SwapChain* swapChain;
 Renderer* renderer;
 Camera* camera;
+bool record = false;
+float record_tick = 1;
+float record_totalFPS = 0;
+int camera_distance_mode = 0;
+const int camera_distance_mode_count = 3;
+const int tick_max = 1000;
 
 namespace {
     void resizeCallback(GLFWwindow* window, int width, int height) {
@@ -52,6 +59,7 @@ namespace {
             float deltaY = static_cast<float>((previousY - yPosition) * sensitivity);
 
             camera->UpdateOrbit(deltaX, deltaY, 0.0f);
+			printf("r, theta, phi: %f,%f,%f\n", camera->r, camera->theta, camera->phi);
 
             previousX = xPosition;
             previousY = yPosition;
@@ -59,10 +67,54 @@ namespace {
             double deltaZ = static_cast<float>((previousY - yPosition) * 0.05);
 
             camera->UpdateOrbit(0.0f, 0.0f, deltaZ);
+			printf("r, theta, phi: %f,%f,%f\n", camera->r, camera->theta, camera->phi);
 
             previousY = yPosition;
         }
     }
+
+	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+	{
+		if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+		{
+			camera->SetOrientationCullingEnabled(-1.f*camera->IsOrientationCullingEnabled());
+			printf("orientation culling: %f\n", camera->IsOrientationCullingEnabled());
+		}
+		if (key == GLFW_KEY_2 && action == GLFW_PRESS)
+		{
+			camera->SetFrustumCullingEnabled(-1.f*camera->IsFrustumCullingEnabled());
+			printf("frustum culling: %f\n", camera->IsFrustumCullingEnabled());
+		}
+		if (key == GLFW_KEY_3 && action == GLFW_PRESS)
+		{
+			camera->SetDistanceCullingEnabled(-1.f*camera->IsDistanceCullingEnabled());
+			printf("distance culling: %f\n", camera->IsDistanceCullingEnabled());
+		}
+		if (key == GLFW_KEY_R && action == GLFW_PRESS)
+		{
+			record = !record;
+			printf("record: %d\n", record);
+			if (record)
+			{
+				record_tick = 0;
+				record_totalFPS = 0;
+			}
+		}
+		if (key == GLFW_KEY_C && action == GLFW_PRESS)
+		{
+			camera_distance_mode = (camera_distance_mode + 1) % camera_distance_mode_count;
+			if(camera_distance_mode == 0)
+				camera->r = 50;
+			if (camera_distance_mode == 1)
+				camera->r = 20;
+			if (camera_distance_mode == 2)
+				camera->r = 5;
+			camera->theta = 0;
+			camera->phi = -34;
+			camera->UpdateOrbit(0.0f, 0.0f, 0.0f);
+			printf("r, theta, phi: %f,%f,%f\n", camera->r, camera->theta, camera->phi);
+		}
+	}
 }
 
 int main() {
@@ -142,11 +194,53 @@ int main() {
     glfwSetWindowSizeCallback(GetGLFWWindow(), resizeCallback);
     glfwSetMouseButtonCallback(GetGLFWWindow(), mouseDownCallback);
     glfwSetCursorPosCallback(GetGLFWWindow(), mouseMoveCallback);
+	glfwSetKeyCallback(GetGLFWWindow(), keyCallback);
 
+	std::stringstream ss;
+	int tick = 0;
+	float totalFPS = 0;
     while (!ShouldQuit()) {
         glfwPollEvents();
         scene->UpdateTime();
+
+		high_resolution_clock::time_point t1 = high_resolution_clock::now();
         renderer->Frame();
+		high_resolution_clock::time_point t2 = high_resolution_clock::now();
+
+		duration<float> deltaTime = duration_cast<duration<float>>(t2 - t1);
+		float FPS = 1.0 / deltaTime.count();//in second
+		totalFPS += FPS;
+		tick++;
+
+		if (tick == tick_max)
+		{
+			totalFPS = totalFPS / tick_max;
+			ss << totalFPS << " fps : record";
+
+			if (record)
+			{
+				record_totalFPS += totalFPS;
+				record_tick++;
+				ss << "ing";
+			}
+			else
+			{
+				float show_record_totalFPS = record_totalFPS / record_tick;
+				ss << "ed " << show_record_totalFPS << " fps";
+			}
+
+			if (record_tick == 10)
+			{
+				record = false;
+			}
+
+			glfwSetWindowTitle(GetGLFWWindow(), ss.str().c_str());
+			ss.clear();
+			ss.str("");
+			tick = 0;
+			totalFPS = 0;
+		}
+		
     }
 
     vkDeviceWaitIdle(device->GetVkDevice());
