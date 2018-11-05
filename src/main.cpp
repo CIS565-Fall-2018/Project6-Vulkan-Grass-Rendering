@@ -5,6 +5,8 @@
 #include "Camera.h"
 #include "Scene.h"
 #include "Image.h"
+#include <iostream>
+
 
 Device* device;
 SwapChain* swapChain;
@@ -143,10 +145,18 @@ int main() {
     glfwSetMouseButtonCallback(GetGLFWWindow(), mouseDownCallback);
     glfwSetCursorPosCallback(GetGLFWWindow(), mouseMoveCallback);
 
+	int frameCount = 0;
+	double time0 = clock();
     while (!ShouldQuit()) {
         glfwPollEvents();
         scene->UpdateTime();
         renderer->Frame();
+		frameCount++;
+		if (frameCount == 1000) {
+			double time1 = clock();
+			std::cout << "Time per frame: " << double(time1 - time0) / CLOCKS_PER_SEC << std::endl;
+		}
+		
     }
 
     vkDeviceWaitIdle(device->GetVkDevice());

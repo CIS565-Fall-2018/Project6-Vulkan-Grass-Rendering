@@ -15,7 +15,7 @@ layout(location = 0) out vec4 outColor;
 void main() {
     // TODO: Compute fragment color
 	 vec3 color1 = vec3( 72/255.0,  86/255.0, 0/255.0);
-    vec3 color2 = vec3(157/255.0, 193/255.0, 0/255.0);
+    vec3 color2 = vec3(200/255.0, 193/255.0, 0/255.0);
     
     outColor = vec4(mix(color1, color2, normal.x), 1.0);
 }

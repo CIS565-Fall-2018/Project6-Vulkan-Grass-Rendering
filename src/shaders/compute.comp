@@ -91,7 +91,7 @@ void main() {
 	vec3 w = 10 * wi * fd * fr;
 
 	// total force
-	v2 += (g + recovery + w + 0) * deltaTime;
+	v2 += (g + recovery + w) * deltaTime;
 
 	// state validation
 	// ensure v2 not pushed below ground
@@ -120,7 +120,7 @@ void main() {
 	// to the culled blades buffer
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
-
+	
 	v0 = blade.v0.xyz;
 	v1 = blade.v1.xyz;
 	v2 = blade.v2.xyz;
@@ -129,7 +129,8 @@ void main() {
 	vec3 dir_c = (inverse(camera.view) * vec4(0, 0, 1, 0)).xyz;
 	dir_c = normalize(vec3(dir_c.x, 0.f, dir_c.z));
 	bool orientationCulled = 0.9 > abs(dot(dir_c, dir));
-
+	
+	
 	// view_frustum culling
 	vec3 m = 0.25 * v0 + 0.5 * v1 + 0.25 * v2;
 	mat4 VP = camera.proj * camera.view;
@@ -156,16 +157,32 @@ void main() {
 	&& inBounds(p_m.z, h_m);
 
 	bool viewfrustumCulled = !(v_v0 && v_v2 && v_m);
-
+	
+	
 	// Distance culling
 	vec3 c = vec3(inverse(camera.view) * vec4(0.f, 0.f, 0.f, 1.f)).xyz;
-	float d_max = 50.f;
+	float d_max = 15.f;
 	uint num = 10;
 	float d_proj = length(v0 - c - up * dot(v0 - c, up));
-	bool distanceCulled = mod(idx, num) < floor(num * (1 - d_proj / d_max));
-
+	bool distanceCulled = mod(idx, num) > floor(num * (1 - d_proj / d_max));
+	
+	
 	if(!(orientationCulled || viewfrustumCulled || distanceCulled)){
 		culledBlades[atomicAdd(numBlades.vertexCount, 1)] = blade;
 	}
-
+	/*
+	if(!orientationCulled){
+		culledBlades[atomicAdd(numBlades.vertexCount, 1)] = blade;
+	}
+	
+	if(!viewfrustumCulled){
+		culledBlades[atomicAdd(numBlades.vertexCount, 1)] = blade;
+	}
+	
+	if(!distanceCulled){
+		culledBlades[atomicAdd(numBlades.vertexCount, 1)] = blade;
+	}
+	*/
+	//culledBlades[atomicAdd(numBlades.vertexCount, 1)] = blade;
+	
 }
