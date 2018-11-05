@@ -1,1 +1,6 @@
-build
+build/
+bin/
+
+# vim
+*swo
+*swp
