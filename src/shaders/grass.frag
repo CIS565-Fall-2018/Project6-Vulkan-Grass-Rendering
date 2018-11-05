@@ -19,16 +19,16 @@ layout(location = 0) out vec4 outColor;
 void main() {
     // TODO: Compute fragment color
 
-	vec3 topCol = vec3(0.65, 0.85, 0.25);
-	vec3 botCol = vec3(0.05, 0.35, 0.15);
+	vec3 topCol = vec3(0.50, 0.99, 0.43);
+	vec3 botCol = vec3(0.60, 0.99, 0.60);
 	//interpolate between bottom color and top color
 	vec3 inter_Col = mix(botCol, topCol, uv.y);
 
 	//sun direction
-	vec3 lightDir = vec3(-1.0, 5.0, -3.0);
+	vec3 lightDir = vec3(-4.0, 9.0, 3.0);
 	lightDir = normalize(lightDir);
 	float lambertian = dot(nor, lightDir);
-	lambertian = clamp(lambertian, 0.1,1.0);
+	lambertian = clamp(lambertian, 0.0,1.0) + 0.40;
 
     outColor = vec4(inter_Col * lambertian, 1.0);
 }

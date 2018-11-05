@@ -33,7 +33,7 @@ void main() {
 
 	float dir = v0.w;
 	vec3 faceTo = vec3(sin(dir), 0.0, cos(dir));
-	faceTo = normalize(faceTo);
+	faceTo = -normalize(faceTo);
 	tesc_forward = vec4(faceTo,0.0);
 
 	gl_Position = model * vec4(v0.xyz, 1.0);

@@ -45,8 +45,10 @@ void main() {
 	vec3 p_right = p + width_offset;
 
 	//interpolate on this left-right line
-	float parameter = u + 0.5 * v - u * v;
-	pos.xyz = (1.0-t) * c0 + t * c1;
+	//float parameter = u + 0.5 * v - u * v;
+	float parameter = u - u * v * v;
+
+	pos.xyz = (1.0-parameter) * p_left + parameter * p_right;
 	pos = camera.proj * camera.view * vec4(pos.xyz, 1.0);
 
 	//compose uv
@@ -54,7 +56,7 @@ void main() {
 	
 	//calculate new normal
 	vec3 grow_dir = normalize(p21 - p11);
-	nor = normalize(cross(width_dir, growth_dir));
+	nor = normalize(cross(width_dir, grow_dir));
 
 	//new forward (just pass thru)
 	forward = tese_forward.xyz;
