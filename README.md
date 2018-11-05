@@ -67,7 +67,7 @@ due to a variety of reasons. Here are some heuristics we can use to cull blades 
 In this project, I passed in each Bezier curve as a single patch to be processed by my grass graphics pipeline. I tessellated this patch into a quad with a shape of my choosing. 
 
 ## Result GIFs
-* 2^11 grass with no culling <br />
+* Grass with no force and no culling <br />
 
 | No force |
 |---------|
