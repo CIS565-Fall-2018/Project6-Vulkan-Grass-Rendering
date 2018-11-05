@@ -26,6 +26,9 @@ The wind force that drives the blades around. In my implementation the wind fiel
 # Demo Video/GIF
 ![](showcase.gif)()
 
+# Interactive demo
+![](showcase2.gif)()
+
 # Performance test
 
 ![](culled.png)()
