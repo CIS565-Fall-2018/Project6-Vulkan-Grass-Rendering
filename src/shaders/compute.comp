@@ -78,13 +78,13 @@ void main()
 	// Force 1: Recovery
 	vec3 Iv2 = v0 + height * (up);
 	float N = 0.0; // TODO: Dont even get me started!!
-	vec3 recoveryForce = (Iv2 - v2) * stiffness * max(1.0 - N, 0.1);
+	vec3 recoveryForce = vec3(0.0);//(Iv2 - v2) * stiffness * max(1.0 - N, 0.1);
 
 	// Force 2: Gravity
-	float mass = 1.0; // TODO: Do you even lift bruh??
-	float t = 0.0; // TODO: What the fuck is this??
+	float mass = 1.0; 
+	float t = 0.0; 
 	vec4 D = vec4(0.0, -1.0, 0.0, 9.8);
-	vec3 C = vec3(0.0); // TODO: Hocus pocus
+	vec3 C = vec3(0.0); // Hocus pocus
 
 	float z = cos(orientation); // sin(90 - orientation)
 	float x = sin(orientation); // cos(90 - orientation)
@@ -96,12 +96,12 @@ void main()
 	vec3 gravityForce = ge + (0.25 * normalize(ge) * f);
 
 	// Force 3: Wind
-	vec3 wi_v0 = vec3(1.0, 0.0, 0.0); // Sample Wind force
+	vec3 wi_v0 = vec3(1.0, 0.0, 0.0) * sin(totalTime) + cos(totalTime * v0) * vec3(0.0, 0.0, 1.0); // Sample Wind force
 	vec3 v2_v0 = v2 - v0;
 	float fd = 1.0 - abs(dot(normalize(wi_v0), normalize(v2 - v0)));
 	float fr = dot(v2_v0, up) / height;
 	float theta = fd * fr;
-	vec3 windForce = wi_v0 * theta;
+	vec3 windForce = vec3(0.0);//wi_v0 * theta;
 
 	// Update Pos of v2
 	vec3 new_v2 = v2 + (recoveryForce + gravityForce + windForce) * deltaTime;
@@ -155,7 +155,7 @@ void main()
 	bool dontFrustrumCull = !(isV0InBounds || isMInBounds || isV2InBounds);
 
 	// Distance Culling
-	float dmax = 20.0;
+	float dmax = 50.0;
 	float nBlades = 30;
 
 	vec3 c = mat3(inverseTransform) * (-camera.view[3].xyz);
