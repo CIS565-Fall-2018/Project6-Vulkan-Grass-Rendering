@@ -26,15 +26,25 @@ struct Blade {
 // 2. Write out the culled blades
 // 3. Write the total number of blades remaining
 
+//in
+layout(set = 2, binding = 0) buffer InputBlades {
+	Blade inputBlades[];
+};
+
+//out
+layout(set = 2, binding = 1) buffer CulledBlades {
+	Blade culledBlades[];
+};
+
 // The project is using vkCmdDrawIndirect to use a buffer as the arguments for a draw call
 // This is sort of an advanced feature so we've showed you what this buffer should look like
 //
-// layout(set = ???, binding = ???) buffer NumBlades {
-// 	  uint vertexCount;   // Write the number of blades remaining here
-// 	  uint instanceCount; // = 1
-// 	  uint firstVertex;   // = 0
-// 	  uint firstInstance; // = 0
-// } numBlades;
+layout(set = 2, binding = 2) buffer NumBlades {
+	uint vertexCount;   // Write the number of blades remaining here
+	uint instanceCount; // = 1
+	int firstVertex;   // = 0
+	uint firstInstance; // = 0
+} numBlades;
 
 bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
@@ -43,14 +53,143 @@ bool inBounds(float value, float bounds) {
 void main() {
 	// Reset the number of blades to 0
 	if (gl_GlobalInvocationID.x == 0) {
-		// numBlades.vertexCount = 0;
+		numBlades.vertexCount = 0;
 	}
+	uint index = gl_GlobalInvocationID.x;
+
 	barrier(); // Wait till all threads reach this point
 
     // TODO: Apply forces on every blade and update the vertices in the buffer
+
+	//get the current blade
+	Blade currBlade = inputBlades[index];
+	
+	//read infomation
+	vec3 v0Pos = currBlade.v0.xyz;
+	float dir_angle = currBlade.v0.w;
+	float height = currBlade.v1.w;
+	vec3 v2Pos = currBlade.v2.xyz;
+	vec3 up_Dir = currBlade.up.xyz;
+	float stiffness = currBlade.up.w;
+
+	//Compute gravity
+	float g_accel = 9.8;
+	vec3 g_dir = -normalize(up_Dir);
+	vec3 gE = g_accel * g_dir;
+
+	vec3 dir_Vec = vec3(sin(dir_angle), 0.0, cos(dir_angle));
+	dir_Vec = normalize(dir_Vec);
+	vec3 gF = -0.25 * length(gE) * dir_Vec;
+
+	vec3 g = gE + gF;
+
+	//Compute recovery force
+	vec3 v2Pos_Initial = v0Pos + up_Dir * height;
+	vec3 recov_F = stiffness * (v2Pos_Initial - v2Pos);
+
+	//Compute wind force
+	float windLevel = 6.0;
+	vec3 wind_Dir = normalize(vec3(1.0, 0.0, -2.0));
+	vec3 wind_Wave = windLevel * ( 0.46 * cos (0.7 * 3.1415926) + sin( 0.3 * v0Pos.x + totalTime / 0.9) + 1.77)* wind_Dir;
+
+	vec3 blade_Dir = v2Pos - v0Pos;
+	float alignment_up = 1.0 - abs(dot(normalize(wind_Wave), normalize(blade_Dir)));
+	float alignment_hori = dot(blade_Dir, up_Dir) / height;
+	
+	vec3 wind_F = alignment_up * alignment_hori * wind_Wave;
+
+	//apply force to change v2's position
+	v2Pos += deltaTime * (g + recov_F + wind_F);
+
+	//validation of new v2's position
+	float under_ground = min(dot(up_Dir, v2Pos - v0Pos), 0.0);
+	v2Pos -= under_ground * up_Dir;
+
+	//Then get v1's position from v0 & v2
+	blade_Dir = v2Pos - v0Pos;
+	float l_proj = length(blade_Dir - dot(blade_Dir, up_Dir) * up_Dir);
+	float l_projH = l_proj / height;
+	vec3 v1Pos = v0Pos + height * max(1.0 - l_projH, 0.05 * max(l_projH, 1.0)) * up_Dir;
+
+	//Positon corrections
+	float L0 = distance(v2Pos, v0Pos);
+	float L1 = distance(v2Pos, v1Pos) + distance(v1Pos, v0Pos);
+	float degree = 3.0;
+
+	float L = (2.0 * L0 + (degree - 1.0) * L1) / (degree + 1.0);
+	float r = height/L;
+
+	vec3 v1Pos_corrected = v0Pos + r * (v1Pos - v0Pos);
+	vec3 v2Pos_corrected = v1Pos + r * (v2Pos - v1Pos);
+
+	//write new v1 & v2 positions into current blade
+	currBlade.v1.xyz = v1Pos;
+	currBlade.v2.xyz = v2Pos;
+	inputBlades[index] = currBlade;
 
 	// TODO: Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
+	
+	//1: orientation culling
+	bool culledByOrientation = false;
+	float orientationCullingThreshold = 0.01f;
+	//read from view matrix, construct view direction vector
+	vec3 view_Dir;
+	view_Dir.x = camera.view[0][0] + camera.view[0][1] + camera.view[0][2];
+	view_Dir.y = 0.0;
+	view_Dir.z = camera.view[2][0] + camera.view[2][1] + camera.view[2][2];
+	view_Dir = normalize(view_Dir);
+	//check dot product again threshold
+	if(abs(dot(view_Dir, dir_Vec)) < orientationCullingThreshold){
+		culledByOrientation = true;
+	}
+
+	//2. view frustum culling
+	mat4 viewProjM = camera.proj * camera.view;
+	vec4 test_v0_vec4 = vec4(currBlade.v0.xyz, 1.0);
+	vec4 test_middle_vec4 = vec4(0.25 * currBlade.v0.xyz + 0.5 * currBlade.v1.xyz + 0.25 * currBlade.v2.xyz, 1.0);
+	vec4 test_v2_vec4 = vec4(currBlade.v2.xyz, 1.0);
+
+	test_v0_vec4 = viewProjM * test_v0_vec4;
+	test_v0_vec4 /= test_v0_vec4.w;
+
+	float testThreshold = 0.3;
+
+	float h = test_v0_vec4.w + testThreshold;
+	bool v0InFrustum = (test_v0_vec4.x >= -h) && (test_v0_vec4.x <= h)
+	                  &&(test_v0_vec4.y >= -h) && (test_v0_vec4.y <= h)
+	                  &&(test_v0_vec4.z >= -h) && (test_v0_vec4.z <= h);
+
+	h = test_middle_vec4.w + testThreshold;
+	bool middleInFrustum = (test_middle_vec4.x >= -h) && (test_middle_vec4.x <= h)
+	                  &&(test_middle_vec4.y >= -h) && (test_middle_vec4.y <= h)
+	                  &&(test_middle_vec4.z >= -h) && (test_middle_vec4.z <= h);
+
+	h = test_v2_vec4.w + testThreshold;
+	bool v2InFrustum = (test_v2_vec4.x >= -h) && (test_v2_vec4.x <= h)
+	                  &&(test_v2_vec4.y >= -h) && (test_v2_vec4.y <= h)
+	                  &&(test_v2_vec4.z >= -h) && (test_v2_vec4.z <= h);
+
+	bool culledByFrustum = (!v0InFrustum) && (!middleInFrustum) && (!v2InFrustum);
+
+	//3: distance culling
+	float cullingDistance = 100.0;
+	
+	vec3 cameraPos = vec3(camera.view[3][0],camera.view[3][1],camera.view[3][2]);
+	cameraPos = -cameraPos;
+
+	vec3 camera2v0 = v0Pos - cameraPos;
+	float d_proj = length(camera2v0 - dot(camera2v0, up_Dir) * up_Dir);
+
+	uint numDistanceCullingBuckets = 5;
+	uint bucketNO = index % numDistanceCullingBuckets;
+	float roundedBucketNo = floor(numDistanceCullingBuckets * (1.0 - d_proj / cullingDistance));
+
+	bool culledByDistance = !(bucketNO <= uint(roundedBucketNo));
+
+	if(!culledByOrientation && !culledByFrustum && !culledByDistance){
+		culledBlades[atomicAdd(numBlades.vertexCount, 1)] = currBlade;
+	}
 }
