@@ -16,11 +16,15 @@ layout(location = 0) out vec4 outColor;
 void main() {
     // TODO: Compute fragment color
 
-	vec3 lightDir = normalize(vec3(1, 1, 1));
-
-
-
 	vec3 bottom = vec3(0.12, 0.43, 0.05);
 	vec3 top = vec3(0.4, 0.86, 0.57);
-    outColor = vec4(mix(bottom, top, clamp(fs_v, 0.0, 1.0)), 1); // * dot(lightDir, vec3(1, 1, 0));
+	vec3 color = mix(bottom, top, clamp(fs_v, 0.0, 1.0));
+
+	vec3 lightDir = normalize(vec3(1, 1, 1));
+	float lambert = clamp(abs(dot(lightDir, nor)), 0, 1);
+
+	float ambient = 0.1f;
+
+	color *= (1.f + ambient); // (lambert + ambient); // Lambert is too dark
+    outColor = vec4(color, 1);
 }

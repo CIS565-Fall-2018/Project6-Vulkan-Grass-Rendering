@@ -26,7 +26,9 @@ private:
     std::vector<Model*> models;
     std::vector<Blades*> blades;
 
-high_resolution_clock::time_point startTime = high_resolution_clock::now();
+    high_resolution_clock::time_point startTime = high_resolution_clock::now();
+
+    int frames;
 
 public:
     Scene() = delete;
@@ -42,4 +44,7 @@ public:
     VkBuffer GetTimeBuffer() const;
 
     void UpdateTime();
+
+    float GetTotalTime() const;
+    int GetTotalFrames() const;
 };

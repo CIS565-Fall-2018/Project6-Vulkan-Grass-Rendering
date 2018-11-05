@@ -154,6 +154,9 @@ int main() {
     vkDestroyImage(device->GetVkDevice(), grassImage, nullptr);
     vkFreeMemory(device->GetVkDevice(), grassImageMemory, nullptr);
 
+    // Print average time per frame
+    printf("Time per frame (us): %f\n", 1000000 * scene->GetTotalTime() / scene->GetTotalFrames());
+
     delete scene;
     delete plane;
     delete blades;
