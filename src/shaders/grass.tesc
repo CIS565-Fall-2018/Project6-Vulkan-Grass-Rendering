@@ -30,8 +30,14 @@ void main() {
 	t_v2 = v_v2[0];
 	t_up = v_up[0];
 
+	// vary detail with distance
+	vec4 v0 = camera.view * gl_in[gl_InvocationID].gl_Position;
+	float z = -v0.z / v0.w;
+	z = (z - 0.1)/(100.0 - 0.1);
+	z  = (1.0 - z);
+
 	// Set level of tesselation
-	float n = 5.0;
+	float n = ceil(10.0 * z);
 
     gl_TessLevelInner[0] = 1.0;
     gl_TessLevelInner[1] = n;

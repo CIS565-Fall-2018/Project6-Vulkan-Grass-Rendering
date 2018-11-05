@@ -40,7 +40,18 @@ vec3 pos = (q - w*(1-v)) + 2*u*w*(1-v);
 // convert to screen space and pass to fragment shader
 gl_Position = camera.proj * camera.view * vec4(pos, 1.0);
 ```
-Currently the stalk is divided vertically into 5 quads, with the width tapering to the tip. Using slightly more complicated functions one could generate more interesting grass shapes, such as folding the blade along the middle, as some grasses do.  
+Originally I had it set so the stalk is divided vertically into 5 quads, with the width tapering to the tip. Using slightly more complicated functions one could generate more interesting grass shapes, such as folding the blade along the middle, as some grasses do.  
+Recently, I added a simple scaling of tessellation detail level with the inverse of distance from the camera. Detail varies from 1 to 10 evenly between the clipping planes, but it is possible to modify it to work just like the distance culling so that all grass blades beyond a certain distance are simple triangles.    
+```cpp
+// vary detail with distance
+vec4 v0 = camera.view * gl_in[gl_InvocationID].gl_Position;
+float z = -v0.z / v0.w;
+z = (z - 0.1)/(100.0 - 0.1);
+z  = (1.0 - z);
+
+// Set level of tesselation
+float n = ceil(10.0 * z);
+```
   
 ### Color  
   
@@ -215,6 +226,6 @@ The tessellation level describes the level of detail in the rendered grass blade
   
 ![Tessellation Performance](img/TessPerf.png)  
   
-Similar to expected, there is a trend of performance loss for increased tessellation level. This was tested with 10,000 blades and all culling disabled. If we take the time difference from level 1 for a level of 10 versus level 100, having 10 times more detail only takes about 4 times more extra time, which is still a lot but a reasonable trade-off.  
+Similar to expected, there is a trend of performance loss for increased tessellation level. This was tested with 100,000 blades and all culling disabled. If we take the time difference from level 1 for a level of 10 versus level 100, having 10 times more detail only takes about 4 times more extra time, which is still a lot but a reasonable trade-off.  
   
   
