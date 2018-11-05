@@ -80,7 +80,7 @@ void main() {
     vec3 wind = vec3(0);
 
     // calculate total force
-    v2 += (gravity + recovery + wind) * 0.2;
+    v2 += (gravity + recovery + wind) * deltaTime;
 
     // validate positions 
     v2 = v2 - up * min(dot(up, v2 - v0), 0);
