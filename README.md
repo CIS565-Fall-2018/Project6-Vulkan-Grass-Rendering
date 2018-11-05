@@ -213,9 +213,8 @@ Contrary to what was previously assumed, the orientation culling had little to n
   
 The tessellation level describes the level of detail in the rendered grass blade. For example, a 100-point curve would be far more detailed and natural looking, but assumed much more computationally expensive to define. Thus, I decided to analyze the performance for varying levels of blade tessellation.
   
+![Tessellation Performance](img/TessPerf.png)  
   
-  
-  
-
+Similar to expected, there is a trend of performance loss for increased tessellation level. This was tested with 10,000 blades and all culling disabled. If we take the time difference from level 1 for a level of 10 versus level 100, having 10 times more detail only takes about 4 times more extra time, which is still a lot but a reasonable trade-off.  
   
   
