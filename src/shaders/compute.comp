@@ -124,8 +124,9 @@ void main() {
 	
 	vec3 frontCamSpace = vec3(camera.view * vec4(front, 0.0f));
 	vec3 zMinus = vec3(0.0f, 0.0f, -1.0f);
-	if (abs(dot(zMinus, frontCamSpace)) >= 0.1f)
+	/*if (abs(dot(zMinus, frontCamSpace)) >= 0.1f)*/
+	if (true)
 	{
-	    culledBlades[atomicAdd(numBlades.vertexCount,1)] = blades[bladeIndex];
+	    culledBlades[atomicAdd(numBlades.vertexCount, 1)] = blades[bladeIndex];
 	}
 }

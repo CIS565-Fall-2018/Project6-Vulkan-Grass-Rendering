@@ -41,6 +41,7 @@ public:
 
 	void Frame();
 
+	int frames;
 private:
 	Device* device;
 	VkDevice logicalDevice;

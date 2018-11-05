@@ -9,7 +9,9 @@
 static constexpr unsigned int WORKGROUP_SIZE = 32;
 
 Renderer::Renderer(Device* device, SwapChain* swapChain, Scene* scene, Camera* camera)
-	: device(device),
+	: 
+	frames(0),
+	device(device),
 	logicalDevice(device->GetVkDevice()),
 	swapChain(swapChain),
 	scene(scene),
@@ -1171,6 +1173,7 @@ void Renderer::Frame() {
 	if (!swapChain->Present()) {
 		RecreateFrameResources();
 	}
+	++frames;
 }
 
 Renderer::~Renderer() {
