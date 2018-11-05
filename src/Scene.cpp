@@ -1,7 +1,7 @@
 #include "Scene.h"
 #include "BufferUtils.h"
 
-Scene::Scene(Device* device) : device(device) {
+Scene::Scene(Device* device) : device(device), frames(0) {
     BufferUtils::CreateBuffer(device, sizeof(Time), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, timeBuffer, timeBufferMemory);
     vkMapMemory(device->GetVkDevice(), timeBufferMemory, 0, sizeof(Time), 0, &mappedData);
     memcpy(mappedData, &time, sizeof(Time));
@@ -32,6 +32,8 @@ void Scene::UpdateTime() {
     time.totalTime += time.deltaTime;
 
     memcpy(mappedData, &time, sizeof(Time));
+
+    frames++;
 }
 
 VkBuffer Scene::GetTimeBuffer() const {
@@ -42,4 +44,12 @@ Scene::~Scene() {
     vkUnmapMemory(device->GetVkDevice(), timeBufferMemory);
     vkDestroyBuffer(device->GetVkDevice(), timeBuffer, nullptr);
     vkFreeMemory(device->GetVkDevice(), timeBufferMemory, nullptr);
+}
+
+float Scene::GetTotalTime() const {
+    return time.totalTime;
+}
+
+int Scene::GetTotalFrames() const {
+    return frames;
 }
