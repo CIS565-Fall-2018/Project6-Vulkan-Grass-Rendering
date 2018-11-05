@@ -36,6 +36,8 @@ The performance with respect to the number of blades, when orientation culling i
 
 The performance with respect to the number of blades, when orientation culling is not in effect.
 
-![](comparison.png)(Performance comparison)
+![](comparison.png)()
+
+The performance comparison, with orientation culling on/off
 
 From this we can see that the performance is better with culling. Since we did a simple test to see if the orientation of the blade is facing towards us, we can cut down many unused calculations in further steps.
