@@ -30,10 +30,10 @@ void main() {
 	t2_bitan = t_bitan[gl_InvocationID];
 
 	// TODONE: Set level of tesselation
-    gl_TessLevelInner[0] = 2;
+    gl_TessLevelInner[0] = 1;
     gl_TessLevelInner[1] = 4;
     gl_TessLevelOuter[0] = 4;
-    gl_TessLevelOuter[1] = 2;
+    gl_TessLevelOuter[1] = 1;
     gl_TessLevelOuter[2] = 4;
-    gl_TessLevelOuter[3] = 2;
+    gl_TessLevelOuter[3] = 1;
 }
