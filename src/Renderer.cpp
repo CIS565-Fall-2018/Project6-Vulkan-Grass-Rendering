@@ -434,7 +434,6 @@ void Renderer::CreateComputeDescriptorSets() {
     // TODO: Create Descriptor sets for the compute pipeline
     // The descriptors should point to Storage buffers which will hold the grass blades, the culled grass blades, and the output number of grass blades 
 	computeDescriptorSets.resize(scene->GetBlades().size());
-	//modelDescriptorSets.resize(scene->GetModels().size());
 
 	// Describe the desciptor set
 	VkDescriptorSetLayout layouts[] = { computeDescriptorSetLayout };
@@ -452,20 +451,22 @@ void Renderer::CreateComputeDescriptorSets() {
 	std::vector<VkWriteDescriptorSet> descriptorWrites(3 * computeDescriptorSets.size());
 
 	for (uint32_t i = 0; i < scene->GetBlades().size(); ++i) {
-		VkDescriptorBufferInfo numBladesBufferInfo = {}; // TODO rename
-		numBladesBufferInfo.buffer = scene->GetBlades()[i]->GetNumBladesBuffer();
-		numBladesBufferInfo.offset = 0;
-		numBladesBufferInfo.range = sizeof(BladeDrawIndirect); // ModelBufferObject);
-
-		VkDescriptorBufferInfo culledBladeBufferInfo = {};
-		culledBladeBufferInfo.buffer = scene->GetBlades()[i]->GetCulledBladesBuffer();
-		culledBladeBufferInfo.offset = 0;
-		culledBladeBufferInfo.range = sizeof(Blade); // ModelBufferObject);
 
 		VkDescriptorBufferInfo inputBladeBufferInfo = {};
 		inputBladeBufferInfo.buffer = scene->GetBlades()[i]->GetBladesBuffer();
 		inputBladeBufferInfo.offset = 0;
-		inputBladeBufferInfo.range = sizeof(Blade); // ModelBufferObject);
+		inputBladeBufferInfo.range = NUM_BLADES * sizeof(Blade);
+
+		VkDescriptorBufferInfo culledBladeBufferInfo = {};
+		culledBladeBufferInfo.buffer = scene->GetBlades()[i]->GetCulledBladesBuffer();
+		culledBladeBufferInfo.offset = 0;
+		culledBladeBufferInfo.range = NUM_BLADES * sizeof(Blade);
+
+		VkDescriptorBufferInfo numBladesBufferInfo = {};
+		numBladesBufferInfo.buffer = scene->GetBlades()[i]->GetNumBladesBuffer();
+		numBladesBufferInfo.offset = 0;
+		numBladesBufferInfo.range = sizeof(BladeDrawIndirect);
+		
 
 		descriptorWrites[3 * i + 0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		descriptorWrites[3 * i + 0].dstSet = computeDescriptorSets[i];
@@ -1118,9 +1119,7 @@ void Renderer::RecordCommandBuffers() {
         vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, grassPipeline);
 
         for (uint32_t j = 0; j < scene->GetBlades().size(); ++j) {
-			// TODO
             VkBuffer vertexBuffers[] = { scene->GetBlades()[j]->GetCulledBladesBuffer() };
-			//VkBuffer vertexBuffers[] = { scene->GetBlades()[j]->GetBladesBuffer() };
             VkDeviceSize offsets[] = { 0 };
             // TODO: Uncomment this when the buffers are populated
             vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
