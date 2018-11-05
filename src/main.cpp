@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "Scene.h"
 #include "Image.h"
+#include <iostream>
 
 Device* device;
 SwapChain* swapChain;
@@ -66,8 +67,9 @@ namespace {
 }
 
 int main() {
+
     static constexpr char* applicationName = "Vulkan Grass Rendering";
-    InitializeWindow(640, 480, applicationName);
+    InitializeWindow(1280, 720, applicationName);
 
     unsigned int glfwExtensionCount = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -143,11 +145,35 @@ int main() {
     glfwSetMouseButtonCallback(GetGLFWWindow(), mouseDownCallback);
     glfwSetCursorPosCallback(GetGLFWWindow(), mouseMoveCallback);
 
+	// for performace analysis
+	double starttime = time(NULL);
+	double endtime = 0.0;
+	int frames = 0;
+	double fps = 0.0;
+
+	int state = 0;
+
     while (!ShouldQuit()) {
         glfwPollEvents();
         scene->UpdateTime();
         renderer->Frame();
+
+		endtime = time(NULL);
+		frames++;
+
+		state = glfwGetKey(GetGLFWWindow(), GLFW_KEY_F);
+		if (state == GLFW_PRESS) {
+			fps = (double)frames / (endtime - starttime);
+			std::cout << "time = " << endtime - starttime << std::endl;
+			std::cout << "frames = " << frames << std::endl;
+			std::cout << "fps = " << fps << std::endl;
+		}
+
+		std::string title = "Running time: " + std::to_string((endtime - starttime));
+		glfwSetWindowTitle(GetGLFWWindow(), title.c_str());
     }
+
+
 
     vkDeviceWaitIdle(device->GetVkDevice());
 
