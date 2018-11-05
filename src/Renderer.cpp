@@ -383,7 +383,7 @@ void Renderer::CreateGrassDescriptorSets() {
 		modelBufferInfo.range = sizeof(ModelBufferObject);
 
 		descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[i].dstSet = modelDescriptorSets[i];
+		descriptorWrites[i].dstSet = grassDescriptorSets[i];
 		descriptorWrites[i].dstBinding = 0;
 		descriptorWrites[i].dstArrayElement = 0;
 		descriptorWrites[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
