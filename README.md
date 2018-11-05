@@ -54,6 +54,28 @@ Here we cull the grass blades that do not lie in the view frustrum. Unfortunalty
 
 # Performance Analysis
 
+## Testing Conditions
+1) V-Sync turned off
+2) Run in Debug mdoe
+3) Performance read using VK_LAYER_LUNARG_monitor extension
+4) Number of grass blades = 2 ^ 20. Dimensions of quad is 150 x 150
+
+## Performance of different types of culling
+
+![](img/performance.png)
+
+From the above graph we can clearly see that culling of unnecessary geometry has a great performance impact. We can conclude:
+
+1) Frustum culling has the best performance improvements.
+2) Distance culling also has levels of improvements, however with this testing scenario, the max distance was close to full size to simulate game like situation.
+3) Orientation culling can only slightly depending upon the threshold chosen for angle cutoff.
+
+## Performance of different levels of tessellations
+
+![](img/performance2.png)
+
+* In case of constant tessellations, the outer edges were subdivided into 15 regions.
+* In case of distance based tessellation, the outer edges were subdivided betwwen 1 and 15 subedges, depending upon the distance of the grass blade from camera.
 
 # Credits
 

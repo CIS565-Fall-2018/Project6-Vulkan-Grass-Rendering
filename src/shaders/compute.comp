@@ -155,7 +155,7 @@ void main()
 	bool dontFrustrumCull = !(isV0InBounds || isMInBounds || isV2InBounds);
 
 	// Distance Culling
-	float dmax = 50.0;
+	float dmax = 200.0;
 	float nBlades = 30;
 
 	vec3 c = mat3(inverseTransform) * (-camera.view[3].xyz);
