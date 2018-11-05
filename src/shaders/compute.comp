@@ -36,6 +36,21 @@ struct Blade {
 // 	  uint firstInstance; // = 0
 // } numBlades;
 
+layout(set = 2, binding = 0) buffer blades {
+	Blade blades_[];
+};
+
+layout(set = 2, binding = 1) buffer CullBlades {
+	Blade cullBlades[];
+};
+
+layout(set = 2, binding = 2) buffer NumBlades {
+	uint vertexCount;   // Write the number of blades remaining here
+	uint instanceCount; // = 1
+	uint firstVertex;   // = 0
+	uint firstInstance; // = 0
+} numBlades;
+
 bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
 }
@@ -43,14 +58,126 @@ bool inBounds(float value, float bounds) {
 void main() {
 	// Reset the number of blades to 0
 	if (gl_GlobalInvocationID.x == 0) {
-		// numBlades.vertexCount = 0;
+		numBlades.vertexCount = 0;
 	}
 	barrier(); // Wait till all threads reach this point
+	
+	uint i = gl_GlobalInvocationID.x;
+	Blade cur_blade = blades_[i];
 
-    // TODO: Apply forces on every blade and update the vertices in the buffer
+	// Position and direction
+	vec3 v0 = cur_blade.v0.xyz;
+	float direction = cur_blade.v0.w;
 
-	// TODO: Cull blades that are too far away or not in the camera frustum and write them
-	// to the culled blades buffer
-	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
-	// You want to write the visible blades to the buffer without write conflicts between threads
+	// Bezier point and height
+	vec3 v1 = cur_blade.v1.xyz;
+	float height = cur_blade.v1.w;
+
+    // Physical model guide and width
+	vec3 v2 = cur_blade.v2.xyz;
+	float width = cur_blade.v2.w;
+
+    // Up vector and stiffness coefficient
+	vec3 up = cur_blade.up.xyz;
+	float stiffness = cur_blade.up.w;
+
+	//r = (Iv2 - v2) * s
+	//basically a direction upwards towards v1
+	vec3 total_height = v0 + up * height;
+	vec3 recovery_force = (total_height - v2) * stiffness;
+
+	// environmental gravity (GE)
+	// It can be a global gravity direction that is the same for the whole scene
+	vec3 GE = vec3(0.0, -9.81, 0.0);
+
+	// front gravity (GF)
+	// gf = 1/4 |GE| * front direction (perpendicular to width of blade)
+	float x_direction = cos(direction);
+	float y_direction = sin(direction);
+	vec3 right = vec3(x_direction, 0.0, y_direction);
+	vec3 front = normalize(cross(right, up));
+	vec3 GF = 1.0 / 4.0 * abs(-9.81) * front;
+
+	//total gravitational force
+	vec3 gravity = GE + GF;
+
+	//wind calculations from the paper
+	vec3 wind_direction = vec3(1.0);
+	float FD = 1.0 - abs(dot(normalize(wind_direction), normalize(v2 - v0)));
+	float FR = dot(v2 - v0, up) / height;
+
+	//calculate total wind based on time
+	float wind_multiple = 3.0;
+	vec3 wind = wind_multiple * wind_direction * FD * FR * cos(totalTime);
+
+	//add all forces together and multiply by delta time
+	vec3 trans_dt = (recovery_force + wind + gravity) * deltaTime;
+
+	//state validation
+	//calculating new v2
+	v2 = v2 + trans_dt;
+	v2 = v2 - up * min(dot(up, (v2 - v0)), 0.0);
+
+	//calculating new v1
+	vec3 l_projection = abs(v2 - v0 - up * dot((v2 - v0), up));
+	v1 = v0 + height * up * max((1.0 - l_projection) / height, 0.05 * max((l_projection/height), 1.0));
+
+	//approximate bezier curve
+	//lengths of points
+	//L0 indicates the distance between the first and the last control
+	//point and L1 is the sum of all distances between a control point and
+	//its subsequent one
+	float L0 = distance(v0, v2);
+	float L1 = distance(v0, v1) + distance(v1, v2);
+
+	//length of beizer
+	float n = 1.5;
+	float L = (n * L0 + (n - 1.0) * L1) / (n + 1.0);
+	float r = height / L;
+
+	vec3 v1_c = v0 + r * (v1 - v0);
+	vec3 v2_c = v1_c + r * (v2 - v1);
+
+	blades_[i].v1.xyz = v1_c;
+	blades_[i].v2.xyz = v2_c;
+	
+	//culling
+
+	
+	//orientation test
+	vec3 dir_b = front;
+	vec4 eye_world = inverse(camera.view) * vec4(0.0, 0.0, 0.0, 1.0);
+	vec3 dir_c = eye_world.xyz - v0;
+
+	if(0.6 < dot(dir_c, dir_b))
+	{
+		return;
+	}
+
+	//view frustrum cull
+	vec4 v0_cull = camera.proj * camera.view * vec4(v0, 1.0);
+	vec4 v2_cull = camera.proj * camera.view * vec4(v2, 1.0);
+	vec4 m_cull =  camera.proj * camera.view * vec4(v0 * 0.25 + v1 * 0.5 + v2 * 0.25, 1.0);
+	float t_ = 0.5;
+	if(!inBounds(v0_cull.x, v0_cull.w + t_) || !inBounds(v0_cull.y, v0_cull.w + t_) || 
+	!inBounds(v2_cull.x, v2_cull.w + t_) || !inBounds(v2_cull.y, v2_cull.w + t_) ||
+	!inBounds(m_cull.x, m_cull.w + t_) || !inBounds(m_cull.y, m_cull.w + t_) 
+	)
+	{
+		return;
+	}
+	
+	//distance cull
+	float n_ = 5.0;
+	float d_proj = length(v0 - eye_world.xyz - dot((v0 - eye_world.xyz), up) * up);
+	float d_max = 30.0;
+	if(floor(n_ * (1.0 - d_proj/d_max)) < mod(i, n_))
+	{
+		return;
+	}
+	
+
+	//update the vertex cound and index the cull blades
+	uint new_v = atomicAdd(numBlades.vertexCount, 1);
+	cullBlades[new_v] = blades_[i];
 }

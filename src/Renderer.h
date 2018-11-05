@@ -63,6 +63,11 @@ private:
     std::vector<VkDescriptorSet> modelDescriptorSets;
     VkDescriptorSet timeDescriptorSet;
 
+    VkDescriptorSetLayout compute_descriptor_set_layout;
+    static constexpr int compute_descriptor_set_layout_size = 3;
+    std::vector<VkDescriptorSet> compute_descriptor_sets;
+    std::vector<VkDescriptorSet> grass_descriptor_sets;
+
     VkPipelineLayout graphicsPipelineLayout;
     VkPipelineLayout grassPipelineLayout;
     VkPipelineLayout computePipelineLayout;
