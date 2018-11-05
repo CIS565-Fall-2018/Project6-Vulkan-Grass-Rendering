@@ -23,10 +23,10 @@ out gl_PerVertex {
 
 void main() {
 	// TODONE: Write gl_Position and any other shader outputs
-	gl_Position = model * vec4(vec3(v0), 1.0);
-	t_v1 = model * vec4(vec3(v1), 1.0);
-	t_v2 = model * vec4(vec3(v2), 1.0);
-	t_up = normalize(model * vec4(vec3(v_up), 0.0));
+	gl_Position = model * vec4(v0.xyz, 1.0);
+	t_v1 = model * vec4(v1.xyz, 1.0);
+	t_v2 = model * vec4(v2.xyz, 1.0);
+	t_up = model * vec4(up.xyz, 1.0);
 	t_bitan = normalize(model * vec4(cos(v0.w - 1.570796), 0, sin(v0.w - 1.570796), 0));
 	t_bitan.w = v2.w;
 }
