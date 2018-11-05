@@ -95,14 +95,27 @@ void main() {
     //vec3 wind_dir = normalize(vec3(1, 0, 1));
 
 	//center wind pattern
-	vec3 wind_dir = normalize(-vec3(1,1,1)+CurV0);
+	vec3 wind_dir = normalize(-vec3(1,0,1)+CurV0);
+
+	vec3 spcenter = 8*vec3(sin(totalTime),0,cos(totalTime));
+   float wind_speed = 5.0;
+   float wind_power = 10.0; 
+     float waveInterval = 1.2;
+	//if(length(CurV0-spcenter)<4)
+	//{
+	//wind_dir = vec3(1,0,1);
+	//wind_power = 500;
+	//waveInterval = 100;
+	//}
+
 
 	vec3 tocent = CurV0-vec3(1,1,1);
 	vec3 tangent = normalize(cross(tocent,CurUp));
+	tangent = tangent-tocent*0.08;
 	//vec3 wind_dir = tangent;
-    float wind_speed = 5.0;
+ 
 	//float waveInterval = 1.8;
-    float waveInterval = 1.2;
+ 
      float wavecoeff = 1*(cos(( dot(CurV0,wind_dir)- wind_speed * totalTime) / waveInterval) );
 	 float normalmag = 0;
 	//Wind
@@ -110,7 +123,7 @@ void main() {
     float fd = 1 - abs(dot(wind_dir, normalize(CurV2 - CurV0)));
     //straightness
     float fr = dot((CurV2 - CurV0), CurUp) / bladeheight;
-     float wind_power = 10.0;
+     
 	//float wind_power = 5.0*(1-distance(CurV0,vec3(1,1,1)));
     vec3 w = wind_dir * wind_power * (normalmag+wavecoeff) * fd * fr;
     //Total Force
@@ -181,7 +194,11 @@ void main() {
 	{
 		if(index%cur>1.0) culldis = true;
 	}
-	
+
+	cullorientation = false;
+	cullviewfrustum = false;
+	culldis = false;
+
  	if(!cullorientation && !cullviewfrustum && !culldis){
 		culledBlades[atomicAdd(numBlades.vertexCount , 1)] = CurBlade;
 	}
