@@ -112,7 +112,11 @@ void main() {
     vec3 recovery = (iv2 - v2) * stiffness;
     
     // calculate wind
-    vec3 wind = vec3(0);
+    vec3 windDir = vec3(1, 0, 0);
+    vec3 wind = sin(totalTime + (v0.x - 20) / 3) * windDir * 1.5;
+    float directionalAlignment = 1 - abs(dot(normalize(wind), normalize(v2-v0)));
+    float heightRatio = dot(v2 - v0, up) / height;
+    wind *= directionalAlignment * heightRatio; 
 
     // calculate total force
     v2 += (gravity + recovery + wind) * deltaTime;

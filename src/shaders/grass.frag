@@ -23,7 +23,7 @@ void main() {
 
     vec3 lightPos = vec3(1);
     vec3 lightDir = normalize(lightPos);
-    float lambertian = clamp(dot(lightDir, tese_normal), 0.4, 1); // lower bound at 0.4 to get rid of the weird black tip
+    float lambertian = clamp(dot(lightDir, tese_normal), 0.6, 1); // lower bound at 0.6 to make grass color look more uniform
     
     outColor = vec4(interpolatedColor * lambertian, 1);
 }
