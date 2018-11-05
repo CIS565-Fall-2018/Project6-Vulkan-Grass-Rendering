@@ -17,8 +17,13 @@ void main() {
     // TODO: Compute fragment color
     // get the normal, and the uv, do a lambertian shading
     // uv can be used to do a mixed color thing from bottom to tip
-    vec4 originalColor = vec4(0, 1, 0, 1);
-    vec3 lightDir = normalize(vec3(1));
+    vec3 topColor = vec3(155, 219, 87) / 255;
+    vec3 botColor = vec3(57, 130, 28) / 255;
+    vec3 interpolatedColor = mix(botColor, topColor, tese_uv.y);
+
+    vec3 lightPos = vec3(1);
+    vec3 lightDir = normalize(lightPos);
+    float lambertian = clamp(dot(lightDir, tese_normal), 0.4, 1); // lower bound at 0.4 to get rid of the weird black tip
     
-    outColor = originalColor * dot(lightDir, tese_normal);
+    outColor = vec4(interpolatedColor * lambertian, 1);
 }

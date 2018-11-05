@@ -15,7 +15,7 @@ layout (location = 3) in vec4 up;
 layout (location = 0) out vec4 vertex_v1;
 layout (location = 1) out vec4 vertex_v2;
 layout (location = 2) out vec4 vertex_up;
-
+layout (location = 3) out vec4 vertex_data; // orientation, height, width, stiffness
 
 out gl_PerVertex {
     vec4 gl_Position;
@@ -23,14 +23,13 @@ out gl_PerVertex {
 
 void main() {
 	// TODO: Write gl_Position and any other shader outputs
-    vec4 temp_v0 = model * vec4(v0.xyz, 1);
-    gl_Position = vec4(temp_v0.xyz, v0.w);
+    vertex_data = vec4(v0.w, v1.w, v2.w, up.w);
 
-    vec4 temp_v1 = model * vec4(v1.xyz, 1);
-    vertex_v1 = vec4(temp_v1.xyz, v1.w);
+    gl_Position = model * vec4(v0.xyz, 1);
 
-    vec4 temp_v2 = model * vec4(v2.xyz, 1);
-    vertex_v2 = vec4(temp_v2.xyz, v2.w);
+    vertex_v1 = model * vec4(v1.xyz, 1);
 
-    vertex_up = normalize(up);
+    vertex_v2 = model * vec4(v2.xyz, 1);
+
+    vertex_up = vec4(normalize(up.xyz), 0);
 }
