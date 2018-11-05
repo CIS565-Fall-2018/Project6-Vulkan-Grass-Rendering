@@ -63,6 +63,11 @@ bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
 }
 
+vec3 windFunction(vec3 v0)
+{
+    return vec3(1, 0, 0) * cos(totalTime);
+}
+
 void main() {
 	// Reset the number of blades to 0
 	if (gl_GlobalInvocationID.x == 0) {
@@ -99,8 +104,15 @@ void main() {
     vec3 v2Original = v0 + h * up;
     vec3 recoveryForce = (v2Original - v2) * stiffness;
 
+    // Calculate Wind force
+    vec3 windValueAtV0 = windFunction(v0);
+    float fd = 1.0 - abs(dot(normalize(windValueAtV0), normalize(v2 - v0)));
+    float fr = dot((v2 - v0), up) / h;
+    float theta = fd * fr;
+    vec3 windForce = windValueAtV0 * theta;
+
     // Accumulate all forces
-    v2 += (recoveryForce + gravityForce) * deltaTime;
+    v2 += (recoveryForce + gravityForce + windForce) * deltaTime;
 
     // State Validation
     v2 = v2 - up * min(dot(up, v2 - v0), 0.0);
