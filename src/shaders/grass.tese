@@ -37,7 +37,7 @@ void main() {
 
 	// TODO: Use u and v to parameterize along the grass blade and output positions for each vertex of the grass blade
 	float w = 0.14;
-	vec3 t1 = vec3(rotationMatrix(vec3(0,1,0), v0[0].x) * vec4(1,0,0,0));
+	vec3 t1 = vec3(rotationMatrix(vec3(0,1,0), v0[0].w) * vec4(1,0,0,0));
 	vec3 a = v0[0].xyz + v * (v1[0].xyz - v0[0].xyz);
 	vec3 b = v1[0].xyz + v * (v2[0].xyz - v1[0].xyz);
 	vec3 c = a + v * (b - a);
