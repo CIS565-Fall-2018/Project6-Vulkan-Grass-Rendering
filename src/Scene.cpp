@@ -42,6 +42,10 @@ float Scene::GetDeltaTime() {
 	return time.deltaTime;
 }
 
+float Scene::GetTotalTime() {
+	return time.totalTime;
+}
+
 Scene::~Scene() {
     vkUnmapMemory(device->GetVkDevice(), timeBufferMemory);
     vkDestroyBuffer(device->GetVkDevice(), timeBuffer, nullptr);

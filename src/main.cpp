@@ -7,6 +7,7 @@
 #include "Image.h"
 
 #include <string>
+#include <iostream> 
 using namespace std;
 
 Device* device;
@@ -150,12 +151,28 @@ int main() {
     glfwSetMouseButtonCallback(GetGLFWWindow(), mouseDownCallback);
     glfwSetCursorPosCallback(GetGLFWWindow(), mouseMoveCallback);
 
+	// frame counters
+	int n = 0;
+	float t1 = 0;
+	float t2 = 0;
+
     while (!ShouldQuit()) {
         glfwPollEvents();
         scene->UpdateTime();
-		string title = "Vulkan Grass Rendering " + to_string(scene->GetDeltaTime() * 1000.f) + " ms";
-		glfwSetWindowTitle(GetGLFWWindow(), title.c_str());
+
+		// added printing performance metrics
+		// Print average time per frame to console in ms,
+		// for every 1000 frames (prevents overflow issues)
+		if (n == 1000) {
+			t1 = t2;
+			t2 = scene->GetTotalTime();
+			cout << (t2 - t1) << "\n";
+			n = 0;
+		}
+
         renderer->Frame();
+		n++;
+
     }
 
     vkDeviceWaitIdle(device->GetVkDevice());
@@ -172,5 +189,7 @@ int main() {
     delete device;
     delete instance;
     DestroyWindow();
+
+	system("pause");
     return 0;
 }

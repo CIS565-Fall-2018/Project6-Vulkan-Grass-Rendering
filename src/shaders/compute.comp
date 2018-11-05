@@ -101,8 +101,6 @@ void main() {
 		numBlades.vertexCount = 0;
 	}
 	barrier(); // Wait till all threads reach this point
-	
-	bool cull_distance = true; // toggle distance culling, for debugging
 
 	/*  ---------------
 	 *    Load Blade
@@ -229,36 +227,35 @@ void main() {
 	vec4 cam_look = normalize(inverse(camera.view) * vec4(0,0,-1,0));
 
 	bool o_cull_pass = true;
+	
 	vec3 tan = normalize(cross(normalize(up), norm));
 	float o_test = dot(vec2(cam_look.x, cam_look.z), vec2(tan.x, tan.z));
 	// if the camera and normal are near perpendicular, cull
 	if (abs(o_test) > 0.9) o_cull_pass = false;
+	
 
 	/*  ---------------
 	 *		Distance
 	 *  ---------------
 	 */
 	bool d_cull_pass = true;
+	
+	int num_bins = 10;
+	float step = 2.0; // change bin size here
+	vec4 v_v0 = camera.view * vec4(v0, 1.0);
+	z = -v_v0.z;
 
-	// for debugging and adjustment purposes, made optional
-	// toggle is at top of main
-	if (cull_distance) {
-		int num_bins = 10;
-		float step = 2.0; // change bin size here
-		vec4 v_v0 = camera.view * vec4(v0, 1.0);
-		z = -v_v0.z;
+	// near and far clip planes
+	if (z > 100.0 || z < 0.1) d_cull_pass = false;
+	// cull if beyond furthest bin
+	if (z > (num_bins * step) + 0.1) d_cull_pass = false;
 
-		// near and far clip planes
-		if (z > 100.0 || z < 0.1) d_cull_pass = false;
-		// cull if beyond furthest bin
-		if (z > (num_bins * step) + 0.1) d_cull_pass = false;
-
-		// select bin, making sure not to divide by zero
-		int bin = int(floor((z - 0.1) / step)) + 1;
-		if (d_cull_pass == true) {
-			if (gl_GlobalInvocationID.x % bin > 1.0) d_cull_pass = false;
-		}
+	// select bin, making sure not to divide by zero
+	int bin = int(floor((z - 0.1) / step)) + 1;
+	if (d_cull_pass == true) {
+		if (gl_GlobalInvocationID.x % bin > 1.0) d_cull_pass = false;
 	}
+	
 
 	/*  ---------------
 	 *    Write Blade

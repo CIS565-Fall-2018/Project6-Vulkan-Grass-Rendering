@@ -68,14 +68,14 @@ outColor = (c1 * c2);
   
 ## Grass Blade Culling  
   
-For practical applications, it is important to discard redundant or unnecessary information. In this case of grass rendering, blades outside the visible area or unable to be seen clearly may be reduced in detail or discarded from the current frame. This process is achieved through multiple culling algorithms in the compute shader.  
+For practical applications, it is important to discard redundant or unnecessary information. In this case of grass rendering, blades outside the visible area or unable to be seen clearly may be reduced in detail or discarded from the current frame. This process is achieved through multiple culling algorithms in the compute shader. The images provided give extreme examples for visualization of their effects.  
   
-### View Frustrum Culling  
+### View Frustum Culling  
   
 ![Frustrum Culling](img/FrustrumCull.gif)  
   
-Grass blades completely outside of the camera's view frustrum do not need to be drawn. While they will eventually be culled as they are converted to fragments out of bounds, it will potentially save GPU cycles to remove these blades beforehand.  
-The base, tip and approximate midpoint coordinates are converted to screen space using the camera view and projection matrices. Then, they are compared against the screen bounds, +- 1, and the z clipping planes, z = 0 and z = 1 when converted to screen space. Additionally, a tolerance of one half-width unit is used so that partially off-screen blades may still be visible. If any of three tested points are within these bounds, the blade is considered in view and is not cullled unless it fails the culling checks.  
+Grass blades completely outside of the camera's view frustum do not need to be drawn. While they will eventually be culled as they are converted to fragments out of bounds, it will potentially save GPU cycles to remove these blades beforehand.  
+The base, tip and approximate midpoint coordinates are converted to screen space using the camera view and projection matrices. Then, they are compared against the screen bounds, +- 1, and the z clipping planes, z = 0 and z = 1 when converted to screen space. Additionally, a tolerance of one half-width unit is used so that partially off-screen blades may still be visible. If any of three tested points are within these bounds, the blade is considered in view and is not culled unless it fails the culling checks.  
   
 ### Orientation Culling  
   
@@ -112,7 +112,7 @@ vec3 gF = g * norm / 4.0;
   
 ![Gravity w/ Recovery](img/Gravity&Recovery2.PNG)  
   
-The grass blades have an inherent "elaticity" generating a resistive force opposing changes to its natural position. This is defined by a stiffness factor multiplied by the change in the position of v2.  
+The grass blades have an inherent "elasticity" generating a resistive force opposing changes to its natural position. This is defined by a stiffness factor multiplied by the change in the position of v2.  
   
 ```cpp
 vec3 R = ((v0 + h * up) - v2) * stiff;
@@ -189,18 +189,33 @@ Under the current implementation, the blades "bounce" slightly as they are adjus
   
 ## Performance Analysis  
   
-### Effects of Culling Techniques  
-  
-Each culling technique has some compute overhead expected per blade, but is expected to save on future computations and rasterization of unnecessary, non-visible blades.
-  
-  
+Performance was measured by extracting the average time per frame. This was done by writing simple wrapper functions to retrieve the timer data from the scene, and measuring the elapsed time for every thousand frames. Then, I took the average of these samples. For scenes that took longer to render, in the interest of time fewer samples were taken.  
+   
 ### Number of Grass Blades  
   
 The number of blades first affects the speed of the compute shader's physics and culling pass. Then, having far more blades on-screen affects the vertex and tessellation shading and rasterization steps. On the GPU, the performance effect is not expected to be drastic, such as scaling with N, due to parallelization, but the total number of blades is nonetheless expected to be be a significant contributor to performance.  
   
+![Num. Blades Performance](img/NumBladesPerf.png)
+  
+From the plot we can see, as expected, a non-linear relationship with blade numbers and time per frame. Although, it is notable that there is a near twice the time per frame to render 1 million blades versus half that amount, indicating the speed becomes more dependent on the number of blades as this number increases.  
+Enabling all culling algorithms results in a significant speed boost as well, and is especially useful when there is a larger concentration of grass blades.
+  
+### Effects of Culling Techniques  
+  
+Each culling technique has some compute overhead expected per blade, but is expected to save on future computations and rasterization of unnecessary, non-visible blades.  
+  
+![Culling Performance](img/CullingPerf.png)
+  
+The effects of culling are less apparent for each technique for low blade counts, until over 10,000 blades. At that point, there is a notable decrease in time per frame for both the frustum and distance culling techniques. As the scene becomes more and more dense, removing a portion of the distant blades becomes incredibly significant, nearly halving the time. Similarly, depending on the view position many of the blades will lie outside the frustum, so discarding them before continuing through the pipeline saves a large amount of time per frame as well.  
+Contrary to what was previously assumed, the orientation culling had little to no effect for smaller blade counts, and the compute overhead was even detrimental for large blade counts. It is possible using a less strict threshold would give better results, but it would result in a less smooth transition of blades coming in and out of viewable orientations.  
   
 ### Tessellation Level  
   
 The tessellation level describes the level of detail in the rendered grass blade. For example, a 100-point curve would be far more detailed and natural looking, but assumed much more computationally expensive to define. Thus, I decided to analyze the performance for varying levels of blade tessellation.
+  
+  
+  
+  
+
   
   
