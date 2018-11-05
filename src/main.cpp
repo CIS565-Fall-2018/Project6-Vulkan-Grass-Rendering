@@ -6,6 +6,10 @@
 #include "Scene.h"
 #include "Image.h"
 
+#include <string>
+#include <iostream> 
+using namespace std;
+
 Device* device;
 SwapChain* swapChain;
 Renderer* renderer;
@@ -65,9 +69,13 @@ namespace {
     }
 }
 
+
 int main() {
     static constexpr char* applicationName = "Vulkan Grass Rendering";
-    InitializeWindow(640, 480, applicationName);
+
+	int w = 1024;
+	int h = 768;
+    InitializeWindow(w, h, applicationName);
 
     unsigned int glfwExtensionCount = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -90,7 +98,7 @@ int main() {
 
     swapChain = device->CreateSwapChain(surface, 5);
 
-    camera = new Camera(device, 640.f / 480.f);
+    camera = new Camera(device, float(w) / float(h));
 
     VkCommandPoolCreateInfo transferPoolInfo = {};
     transferPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -143,10 +151,28 @@ int main() {
     glfwSetMouseButtonCallback(GetGLFWWindow(), mouseDownCallback);
     glfwSetCursorPosCallback(GetGLFWWindow(), mouseMoveCallback);
 
+	// frame counters
+	int n = 0;
+	float t1 = 0;
+	float t2 = 0;
+
     while (!ShouldQuit()) {
         glfwPollEvents();
         scene->UpdateTime();
+
+		// added printing performance metrics
+		// Print average time per frame to console in ms,
+		// for every 1000 frames (prevents overflow issues)
+		if (n == 1000) {
+			t1 = t2;
+			t2 = scene->GetTotalTime();
+			cout << (t2 - t1) << "\n";
+			n = 0;
+		}
+
         renderer->Frame();
+		n++;
+
     }
 
     vkDeviceWaitIdle(device->GetVkDevice());
@@ -163,5 +189,7 @@ int main() {
     delete device;
     delete instance;
     DestroyWindow();
+
+	system("pause");
     return 0;
 }

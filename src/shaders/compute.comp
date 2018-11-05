@@ -26,31 +26,244 @@ struct Blade {
 // 2. Write out the culled blades
 // 3. Write the total number of blades remaining
 
+layout(set = 2, binding = 0) buffer Blades {
+	Blade blades[];
+};
+
+layout(set = 2, binding = 1) buffer Culled {
+	Blade culled[];
+};
+
 // The project is using vkCmdDrawIndirect to use a buffer as the arguments for a draw call
 // This is sort of an advanced feature so we've showed you what this buffer should look like
 //
-// layout(set = ???, binding = ???) buffer NumBlades {
-// 	  uint vertexCount;   // Write the number of blades remaining here
-// 	  uint instanceCount; // = 1
-// 	  uint firstVertex;   // = 0
-// 	  uint firstInstance; // = 0
-// } numBlades;
+layout(set = 2, binding = 2) buffer NumBlades {
+ 	uint vertexCount;   // Write the number of blades remaining here
+	uint instanceCount; // = 1
+ 	uint firstVertex;   // = 0
+	uint firstInstance; // = 0
+} numBlades;
 
 bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
 }
 
+bool bladeInBounds(vec3 v0, vec3 v1, vec3 v2, float w) {
+	float threshold = 1.0;
+
+	vec4 m = vec4((v0 / 4) + (v1 / 2) + (v2 / 4), 1.0);
+
+	// v0
+	vec4 v_v0 = camera.view * vec4(v0, 1.0);
+	v_v0 = camera.proj * v_v0;
+	v_v0 = v_v0 / v_v0.w;
+	
+	float tolerance = w / v_v0.w;
+	
+	bool y_in = inBounds(v_v0.y, threshold + tolerance);
+	bool x_in = inBounds(v_v0.x, threshold + tolerance);
+	bool z_in = inBounds(v_v0.z - 0.5, threshold / 2.0 + tolerance);
+
+	if (y_in && x_in && z_in) {
+		return true;
+	}
+	
+	// v2
+	vec4 v_v2 = camera.proj * camera.view * vec4(v2, 1.0);
+	v_v2 = v_v2 / v_v2.w;
+
+	y_in = inBounds(v_v2.y, threshold + tolerance);
+	x_in = inBounds(v_v2.x, threshold + tolerance);
+	z_in = inBounds(v_v2.z - 0.5, threshold / 2.0 + tolerance);
+
+	if (y_in && x_in && z_in) {
+		return true;
+	}
+
+	// midpoint
+	m = camera.proj * camera.view * m;
+	m = m / m.w;
+	
+	y_in = inBounds(m.y, threshold + tolerance);
+	x_in = inBounds(m.x, threshold + tolerance);
+	z_in = inBounds(m.z - 0.5, threshold / 2.0 + tolerance);
+
+	if (y_in && x_in && z_in) {
+		return true;
+	}
+
+	return false;
+}
+
 void main() {
 	// Reset the number of blades to 0
 	if (gl_GlobalInvocationID.x == 0) {
-		// numBlades.vertexCount = 0;
+		numBlades.vertexCount = 0;
 	}
 	barrier(); // Wait till all threads reach this point
 
-    // TODO: Apply forces on every blade and update the vertices in the buffer
+	/*  ---------------
+	 *    Load Blade
+	 *  ---------------
+	 */
+	// Load blade properties
+	// v0 and orientation
+	vec3 v0 = blades[gl_GlobalInvocationID.x].v0.xyz;
+	float face = blades[gl_GlobalInvocationID.x].v0.w;
 
-	// TODO: Cull blades that are too far away or not in the camera frustum and write them
-	// to the culled blades buffer
-	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
-	// You want to write the visible blades to the buffer without write conflicts between threads
+	// v1 and height
+	vec3 v1 = blades[gl_GlobalInvocationID.x].v1.xyz;
+	float h = blades[gl_GlobalInvocationID.x].v1.w;
+
+	// v2 and width
+	vec3 v2 = blades[gl_GlobalInvocationID.x].v2.xyz;
+	float w = blades[gl_GlobalInvocationID.x].v2.w;
+
+	// up direction and stiffness
+	vec3 up = blades[gl_GlobalInvocationID.x].up.xyz;
+	float stiff = blades[gl_GlobalInvocationID.x].up.w;
+
+	// use direction to get normal vector of face
+	float x = cos(face);
+	float z = sin(face);
+	float y = -(up.x * x + up.z * z) / up.y;
+
+	vec3 norm = normalize(vec3(x,y,z));
+
+	/*     Physics:
+	 *  ---------------
+	 *      Gravity
+	 *  ---------------
+	 */
+	float g = 9.807; // 9.807 m/s^2 on Earth
+	// Global gravity direction should be straight down
+	vec3 gE = vec3(0.0, -g, 0.0);
+
+	// "Face" gravity influence, so v2 moves more naturally outward instead of straight down
+	vec3 gF = g * norm / 4.0;
+
+	/*  ---------------
+	 *     Recovery
+	 *  ---------------
+	 */
+	vec3 R = ((v0 + h * up) - v2) * stiff;
+
+	/*  ---------------
+	 *       Wind
+	 *  ---------------
+	 */
+	float f1 = 0.33;
+
+	// set prevailing wind direction to +x
+	// shift wind direction in z w/ cos in time
+	vec3 w_direc = normalize(vec3(1.0, 0.0, cos(f1 * totalTime + v0.z) / 4.0));
+
+	// get adjected face direction approximation
+	vec3 dir = normalize(vec3(x, -((v2 - v0).x * x + (v2 - v0).z * z) / (v2 - v0).y, z));
+
+	// use direction of blade to adjust wind influence
+	// stronger wind expected more momentum in main direction, 
+	// so use z direction freq^-1 to also adjust strength
+	float w_scale = (1.0/ f1) * abs(dot(dir, w_direc));
+	float f2 = 1.0;
+	vec3 Wind = w_scale * w_direc * (sin(f2 * totalTime + v0.x) + 2.0);
+	
+	/*  ---------------
+	 *    Application
+	 *  ---------------
+	 */
+	vec3 shift = (R + gF + gE + Wind) * deltaTime;
+	//vec3 shift = (R + gF + gE) * deltaTime;
+	//vec3 shift = (Wind + R) * deltaTime;
+
+	// adjust v2 position
+	v2 += shift;
+
+	/*  ---------------
+	 *    Validation
+	 *  ---------------
+	 */
+	
+	// keep v2 from going underground
+	float up_dot = dot(up, (v2 - v0));
+	v2 = v2 - up * min(up_dot, 0.0);
+	
+	// make sure length ~ height
+	up_dot = dot(up, (v2 - v0));
+	float l_proj = length((v2 - v0) - up * up_dot);
+	if (l_proj != 0.0) {
+		v1 = v0 + h * up * max(1.0 - l_proj / h, 0.05 * max (l_proj / h, 1.0));
+
+		float L0 = length(v2 - v0);
+		float L1 = length(v2 - v1) + length(v1 - v0);
+		float n = 2.0; // degree of curve, quadratic
+		float L = (2.0 * L0 + (n - 1.0)* L1) / (n + 1.0);
+
+		float r = h / L;
+
+		vec3 old_v1 = v1;
+
+		v1 = v0 + r*(old_v1 - v0);
+		v2 = v1 + r*(v2 - old_v1);
+	}
+	
+	// write updated v1 & v2 to blade data
+	blades[gl_GlobalInvocationID.x].v1 = vec4(v1, h);
+	blades[gl_GlobalInvocationID.x].v2 = vec4(v2, w);
+
+	/*   Blade Culling:
+	 *  ---------------
+	 *     Frustrum
+	 *  ---------------
+	 */
+	// view frustrum culling with w/2 tolerance
+	bool f_cull_pass = bladeInBounds(v0, v1, v2, w / 2.0);
+
+	/*  ---------------
+	 *    Orientation
+	 *  ---------------
+	 */
+	// get camera forward vector from inverse view matrix, access third row, invert
+	vec4 cam_look = normalize(inverse(camera.view) * vec4(0,0,-1,0));
+
+	bool o_cull_pass = true;
+	
+	vec3 tan = normalize(cross(normalize(up), norm));
+	float o_test = dot(vec2(cam_look.x, cam_look.z), vec2(tan.x, tan.z));
+	// if the camera and normal are near perpendicular, cull
+	if (abs(o_test) > 0.9) o_cull_pass = false;
+	
+
+	/*  ---------------
+	 *		Distance
+	 *  ---------------
+	 */
+	bool d_cull_pass = true;
+	
+	int num_bins = 10;
+	float step = 2.0; // change bin size here
+	vec4 v_v0 = camera.view * vec4(v0, 1.0);
+	z = -v_v0.z;
+
+	// near and far clip planes
+	if (z > 100.0 || z < 0.1) d_cull_pass = false;
+	// cull if beyond furthest bin
+	if (z > (num_bins * step) + 0.1) d_cull_pass = false;
+
+	// select bin, making sure not to divide by zero
+	int bin = int(floor((z - 0.1) / step)) + 1;
+	if (d_cull_pass == true) {
+		if (gl_GlobalInvocationID.x % bin > 1.0) d_cull_pass = false;
+	}
+	
+
+	/*  ---------------
+	 *    Write Blade
+	 *  ---------------
+	 */
+	if (f_cull_pass && o_cull_pass && d_cull_pass) {
+		uint idx = atomicAdd(numBlades.vertexCount , 1);
+		culled[idx] = blades[gl_GlobalInvocationID.x];
+	}
+
 }
