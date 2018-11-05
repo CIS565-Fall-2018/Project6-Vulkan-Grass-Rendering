@@ -90,7 +90,10 @@ With the culling tests, the grass which are not within range are not displayed.
 
 ### Performance Analysis
 
-The performance analysis is where you will investigate how...
-* Your renderer handles varying numbers of grass blades
-* The improvement you get by culling using each of the three culling tests
+| Performance chart |
+|---------|
+| ![](img/performance.PNG) |
+
+* When the Number of blades is low, the performance of these methods are all similar. The difference grows almost exponentially as the num_blades increases. Orientation culling is definitely better than view_frustum culling as the performance of distance culling  are differed with different max distances. Although setting up a very small max distance is great for the speed, the outcome image would look bad so its not recommended. Putting all three methods together is clearly the best way when it comes to large number of blades.
+
 
