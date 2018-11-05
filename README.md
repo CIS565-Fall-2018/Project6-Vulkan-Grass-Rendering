@@ -16,17 +16,17 @@ In this project, grass blades are represented as 2nd order Bezier curves, and we
 
 Simulation forces include:
 
-# Gravity
+### Gravity
 Total gravity is determined as ```gE + gF```.
-# Recovery
+### Recovery
 The force that brings the grass blades back to equilibrium. Given by ```r = (iv2 - v2) * stiffness```.
-# Wind
+### Wind
 The wind force that drives the blades around. In my implementation the wind field is given by a psuedo-random noise with respect to x and z coordinates of the blade, and the intensity is given by a function of cosine(t). 
 
-### Demo Video/GIF
+# Demo Video/GIF
 ![](showcase.gif)()
 
-### Performance test
+# Performance test
 
 ![](culled.png)()
 
