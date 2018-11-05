@@ -80,9 +80,13 @@ private:
     VkDeviceMemory numBladesBufferMemory;
 
 public:
+  VkDescriptorSet bladesDescriptorSet;
+  VkDescriptorSet grassDescriptorSet;
+
     Blades(Device* device, VkCommandPool commandPool, float planeDim);
     VkBuffer GetBladesBuffer() const;
     VkBuffer GetCulledBladesBuffer() const;
     VkBuffer GetNumBladesBuffer() const;
+    VkDescriptorSet GetDescriptorSet() const;
     ~Blades();
 };
