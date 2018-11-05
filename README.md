@@ -32,7 +32,7 @@ Follow the steps in the paper, a grass is represented as a Bezier curve with wid
 
 ### Result images
 
-Configuration: 100x100 underlying plane, 2^21 grass blades
+_Configuration: 100x100 underlying plane, 2^21 grass blades_
 
 View 1:
 
@@ -72,7 +72,7 @@ High  |   Low
 Analysis
 ====================
 
-**Configuration: 1280x960 window, 100x100 underlying plane, 2^18 grass blades**
+**_Configuration: 1280x960 window, 100x100 underlying plane, 2^18 grass blades_**
 
 ### Grass Blades number
 
