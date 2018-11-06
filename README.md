@@ -43,7 +43,7 @@ There are 3 types of simulating forces, gravity, wind and recovery. We just add 
 ### Culling tests
 
 Although we need to simulate forces on every grass blade at every frame, there are many blades that we won't need to render
-due to a variety of reasons. Here are some heuristics we can use to cull blades that won't contribute positively to a given frame.
+due to a variety of reasons. Here are some heuristics we can use to cull blades that won't contribute positively to a given frame and the result of culling. Also culling can improve performance a lot since we decrease the number of blades needed to be rendered.
 
 | All culling        | Orientation culling           |
 | ------------- |:-------------:|
