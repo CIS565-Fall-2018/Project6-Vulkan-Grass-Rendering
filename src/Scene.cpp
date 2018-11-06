@@ -30,8 +30,19 @@ void Scene::UpdateTime() {
 
     time.deltaTime = nextDeltaTime.count();
     time.totalTime += time.deltaTime;
+    totalFrames += 1.0;
 
     memcpy(mappedData, &time, sizeof(Time));
+}
+
+float Scene::GetTotalFrames() const
+{
+    return totalFrames;
+}
+
+float Scene::GetTotalTime() const
+{
+    return time.totalTime;
 }
 
 VkBuffer Scene::GetTimeBuffer() const {

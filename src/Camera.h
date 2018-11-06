@@ -29,4 +29,7 @@ public:
     VkBuffer GetBuffer() const;
     
     void UpdateOrbit(float deltaX, float deltaY, float deltaZ);
+    float GetR() const;
+    float GetTheta() const;
+    float GetPhi() const;
 };
