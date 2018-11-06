@@ -86,7 +86,7 @@ Total force is calculated as `tF = (gravity + recovery + wind) * deltaTime`.
 
 I followed section 5.2 of the paper referenced to determine the corrected final positions for `v1` and `v2` (these corrections ensure that grass doesn't pass below ground plane and maintains a proper length).
 
-### Culling tests
+### Culling Tests
 
 * Orientation: Blades whose normals are perpendicular to the look vector are culled. We can't see these!
 * Frustum: Blades that are outside the viewing frustum are culled.
@@ -95,10 +95,10 @@ I followed section 5.2 of the paper referenced to determine the corrected final 
 Performance
 ------------
 
-## FPS Performance as a function of number of grass blades
+#### FPS Performance as a function of number of grass blades
 
 
-## FPS Performance improvements using culling
+#### FPS Performance improvements using culling
 
 Links
 ------------
