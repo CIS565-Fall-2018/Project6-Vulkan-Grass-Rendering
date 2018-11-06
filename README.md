@@ -8,7 +8,7 @@ Vulkan Grass Rendering
 
 ### Demo GIF
 
-![](images/demo.gif)
+![](img/demo.gif)
 
 ## Project Description ##
 This project implements a grass simmulator and renderer using Vulkan. The compute shader is used to perform phusics calculation on Bezier curves that represents individual grass baldes in the application. Culling is done in the compute shader as well because rendering every grass blade on every frame is quite expensive. Three types of culling techniques are used: View frustum culling, distance culling, and orientation culling. The remaining blades are passed to a graphics pipe line consisting of vertex shader, tessellation shaders, and fragment shader to transform Bezier curves into grass geometry and shade them.
