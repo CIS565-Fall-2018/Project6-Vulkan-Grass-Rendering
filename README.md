@@ -39,9 +39,9 @@ Orientation culling filters out grass blades that's not facing the camera. The g
 
 ![](img/orientationCulling.gif)
 
-View-Frustrum culling filters out grass blades that's not completely in the frustrum. The gif below demonstrates the concept with a much smaller view-frustrum to demonstrate the effect.
+View-frustum culling filters out grass blades that's not completely in the frustum. The gif below demonstrates the concept with a much smaller view-frustum to demonstrate the effect.
 
-![](img/viewFrustrumCulling.gif)
+![](img/viewfrustumCulling.gif)
 
 Finally, distance culling filters out grass blades that are too far away. Grass blades are divided into sections based on distance from the camera; the farther the section, the more grass in the section is culled. The gif below shows the effect with a much shorter culling distance to demonstrate the effect
 

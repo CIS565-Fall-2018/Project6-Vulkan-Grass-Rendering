@@ -52,18 +52,18 @@ bool orientationCulled(vec3 viewDir, vec3 widthDir){
     return abs(dot(viewDir, widthDir)) > 0.9;
 }
 
-bool isPointInViewFrustrum(vec4 point, float tolerance){
+bool isPointInViewFrustum(vec4 point, float tolerance){
     float h = point.w + tolerance;
     return inBounds(point.x, h) && inBounds(point.y, h) && inBounds(point.z, h);
 }
 
-bool viewFrustrumCulled(vec3 v0, vec3 v1, vec3 v2){
+bool viewFrustumCulled(vec3 v0, vec3 v1, vec3 v2){
     vec3 midpoint = 0.25 * v0 + 0.5 * v1 + 0.25 * v2;
     float tolerance = 0.05;
     mat4 viewProj = camera.proj * camera.view;
-    bool v0_inView = isPointInViewFrustrum(viewProj * vec4(v0, 1), tolerance);
-    bool v2_inView = isPointInViewFrustrum(viewProj * vec4(v2, 1), tolerance);
-    bool midpoint_inView = isPointInViewFrustrum(viewProj * vec4(midpoint, 1), tolerance);
+    bool v0_inView = isPointInViewFrustum(viewProj * vec4(v0, 1), tolerance);
+    bool v2_inView = isPointInViewFrustum(viewProj * vec4(v2, 1), tolerance);
+    bool midpoint_inView = isPointInViewFrustum(viewProj * vec4(midpoint, 1), tolerance);
     return !v0_inView && !v2_inView && !midpoint_inView;
 }
 
@@ -143,7 +143,7 @@ void main() {
     // TODO: Cull blades that are too far away or not in the camera 
     // frustum and write them to the culled blades buffer
     if (!orientationCulled(cameraDir, widthDir) && 
-        !viewFrustrumCulled(v0, v1_corr, v2_corr) && 
+        !viewFrustumCulled(v0, v1_corr, v2_corr) && 
         !distanceCulled(v0, up)){
         // Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
         // You want to write the visible blades to the buffer without write conflicts between threads
