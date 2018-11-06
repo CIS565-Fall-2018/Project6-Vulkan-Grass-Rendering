@@ -91,7 +91,7 @@ void main() {
 
 	// wind
 	vec3 windDirection = vec3(1.f, 0.f, 0.f);
-	float windForce = 3 * sin(totalTime);
+	float windForce = 8 * sin(totalTime);
 
 	float fd = 1 - abs(dot (normalize(windDirection), normalize(v2 - v0)));
 	float fr = dot(v2 - v0, up) / h;
@@ -146,24 +146,26 @@ void main() {
 	vec4 ndc2 = vp * vec4(v2, 1.f);
 	vec4 ndcm = vp * vec4(mid, 1.f); 
 	
-	float tolerance = 1.f;
+	float tolerance = 0.1f;
 	float h0 = ndc0.w + tolerance;
 	float h2 = ndc2.w + tolerance;
 	float hm = ndcm.w + tolerance;
 
-	frustum_cull = inBounds(ndc0.x, h0) && inBounds(ndc0.y, h0) && inBounds(ndc0.z, h0)
+	frustum_cull = !(inBounds(ndc0.x, h0) && inBounds(ndc0.y, h0) && inBounds(ndc0.z, h0)
 	               && inBounds(ndc2.x, h2) && inBounds(ndc2.y, h2) && inBounds(ndc2.z, h2)
-				   && inBounds(ndcm.x, hm) && inBounds(ndcm.y, hm) && inBounds(ndcm.z, hm);
+				   && inBounds(ndcm.x, hm) && inBounds(ndcm.y, hm) && inBounds(ndcm.z, hm));
 
 	//distance culling
 	vec3 camera_pos = (invView * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-	float dproj = length(v0 - camera_pos - up * dot(up, (v0 - camera_pos)) );
+	float d_proj = length(v0 - camera_pos - up * dot(up, (v0 - camera_pos)) );
 	float dmax = 20.0;
 	int num = 10;
 
-	bool distance_cull = mod(idx, num) < floor(num * (1.0 - dproj / dmax) );
+	bool distance_cull = mod(idx, num) > floor(num * (1.0 - d_proj / dmax) );
 
-	if(orient_cull && frustum_cull && distance_cull ) {
+
+	if(!orient_cull && !frustum_cull && !distance_cull ) 
+	{
 		culledBlades[atomicAdd(numBlades.vertexCount , 1)] = blade;
 	}	
 }

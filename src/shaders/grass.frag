@@ -17,7 +17,9 @@ void main() {
     // TODO: Compute fragment color
 	
 	float ambientTerm = 0.2;
-	vec3 color = vec3(0.2, 0.5, 0.05);
+	vec3 color1 = vec3(0.2, 0.5, 0.1);
+	vec3 color2 = vec3(0.6, 0.8, 0.3);
+	vec3 color = mix(color1, color2, uv.y);
 	vec3 light_pos = vec3(5.f, 5.f, 5.f);
 	float light_dist = distance(light_pos, pos.xyz);
 	vec3 L = (light_pos - pos.xyz) / light_dist;
