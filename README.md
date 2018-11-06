@@ -40,7 +40,7 @@ In the graph below, features are added incrementally from left to right and perf
 
 ![Static Grass](img/analysis.png)
 
-Clearly, the fps increases with the addition of new culling techniques. Some of these techniques are conditional, for example, frustum culling will only hurt performance if every blade of grass is in the viewport. However, in the general case where the camera is somewhere inside the scene, all culling methods boost performance by about 50 fps or more.
+Clearly, the fps increases with the addition of new culling techniques. Some of these techniques are conditional, for example, frustum culling can only hurt performance if every blade of grass is in the viewport. However, in the general case where the camera is somewhere inside the scene, all culling methods boost performance by about 50 fps or more. Distance culling and orientation culling are particularly efficient regardless of how the camera is positioned and oriented.
 
 ![Static Grass](img/static.png)
 
