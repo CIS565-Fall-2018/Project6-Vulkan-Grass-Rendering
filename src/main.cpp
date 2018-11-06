@@ -143,7 +143,24 @@ int main() {
     glfwSetMouseButtonCallback(GetGLFWWindow(), mouseDownCallback);
     glfwSetCursorPosCallback(GetGLFWWindow(), mouseMoveCallback);
 
+    double previousStatsTime = glfwGetTime();
+    int frameCount{0};
+
     while (!ShouldQuit()) {
+
+      const double currentTime = glfwGetTime();
+
+      const double statsTimeDelta = currentTime - previousStatsTime;
+      frameCount++;
+
+      if (statsTimeDelta >= 1.0) {
+        std::string windowTitle = std::string("FPS: " + std::to_string(frameCount) + " - Frame Time: " + std::to_string(1000.0 / frameCount) + "ms");
+        glfwSetWindowTitle(GetGLFWWindow(), windowTitle.c_str());
+
+        frameCount = 0;
+        previousStatsTime = currentTime;
+      }
+
         glfwPollEvents();
         scene->UpdateTime();
         renderer->Frame();

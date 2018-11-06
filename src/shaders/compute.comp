@@ -44,8 +44,8 @@ const uint MAX_NUM_BLADES = 8192;
 const vec3 WORLD_GRAVITY = vec3(0.0, -9.8, 0.0);
 const float BEZIER_DEGREE = 2.0;
 const float VIEW_CULLING_TOLERANCE = 2.0;
-const float DISTANCE_CULLING_VALUE = 20.0;
-const float DISTANCE_CULLING_N = 10.0;
+const float DISTANCE_CULLING_VALUE = 30.0;
+const float DISTANCE_CULLING_N = 20.0;
 
 // TODO: Add bindings to:
 // 1. Store the input blades
