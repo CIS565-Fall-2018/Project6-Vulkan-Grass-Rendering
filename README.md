@@ -24,18 +24,18 @@ A list of features implemented in this project is as follows:
 
 **Distance Culling**
 
-![](images/distance_culling.gif)
+![](img/distance_culling.gif)
 
 **View-frustum Culling**
 
-![](images/view-frustum.gif)
+![](img/view-frustum.gif)
 
 **Orientation Culling**
 
-![](images/orientation-culling.gif)
+![](img/orientation-culling.gif)
 
 ## Performance Analysis ##
 
-![](images/performance.png)
+![](img/performance.png)
 
 It can be observed from the figure above that view-frustum culling and orientation culling improve the performance a lot because they eliminate a lot of unnecessary physics and tessellation computation. But the performance improvement of these two culling methods also depends on the camera position. The more Bezier curves are outside view, the better performance can be obtained. As the number of blades increases, the performance of all 5 scenarios drops because there are more calculations going on. With all three culling added, the overall performance could be quite good.
