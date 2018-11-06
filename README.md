@@ -13,7 +13,7 @@ Introduction
 ------------
 In this project, I use Vulkan to implement a grass simulator and renderer. I use compute shaders to perform physics calculations on Bezier curves that represent individual grass blades. Since rendering every grass blade on every frame is fairly inefficient, I also use compute shaders to cull grass blades that don't contribute to a given frame.
 
-![](img/grass.gif) ![](img/grass2.gif)
+![](img/grass_forces.gif)
 
 Features
 ------------
@@ -30,7 +30,7 @@ This project is an implementation of the paper, [Responsive Real-Time Grass Rend
 
 ### Representing Grass as Bezier Curves
 
-In this project, grass blades are represented as Bezier curves while performing physics calculations and culling operations. 
+Grass blades are represented as Bezier curves while performing physics calculations and culling operations. 
 Each Bezier curve has three control points.
 * `v0`: the position of the grass blade on the geomtry
 * `v1`: a Bezier curve guide that is always "above" `v0` with respect to the grass blade's up vector (explained soon)
@@ -49,6 +49,10 @@ We can pack all this data into four `vec4`s, such that `v0.w` holds orientation,
 ![](img/blade_model.jpg)
 
 ### Tesselation Shader and Rendering Basic Grass
+
+Without physics calculations in the compute shader, grass is rendered as straight blades after tesselation and fragment shading.
+
+![](img/grass_straight.gif)
 
 ### Simulating Forces in Compute Shader
 
@@ -72,7 +76,7 @@ Once we have `iv2`, we can compute the recovery forces as `r = (iv2 - v2) * stif
 
 * Wind
 
-Wind is calculated as `vec(v_x, 0, v_z) * sin(time)`
+Wind is calculated as `vec(v_x, 0, v_z) * sin(time)` (a sinusoidal force along a particular wind direction).
 
 * Total Force
 
@@ -80,53 +84,13 @@ Total force is calculated as `tF = (gravity + recovery + wind) * deltaTime`.
 
 * Positional Corrections
 
-I followed section 5.2 of the paper referenced to determine the corrected final positions for `v1` and `v2`. 
+I followed section 5.2 of the paper referenced to determine the corrected final positions for `v1` and `v2` (these corrections ensure that grass doesn't pass below ground plane and maintains a proper length).
 
 ### Culling tests
 
-Although we need to simulate forces on every grass blade at every frame, there are many blades that we won't need to render
-due to a variety of reasons. Here are some heuristics we can use to cull blades that won't contribute positively to a given frame.
-
-#### Orientation culling
-
-Consider the scenario in which the front face direction of the grass blade is perpendicular to the view vector. Since our grass blades
-won't have width, we will end up trying to render parts of the grass that are actually smaller than the size of a pixel. This could
-lead to aliasing artifacts.
-
-In order to remedy this, we can cull these blades! Simply do a dot product test to see if the view vector and front face direction of
-the blade are perpendicular. The paper uses a threshold value of `0.9` to cull, but feel free to use what you think looks best.
-
-#### View-frustum culling
-
-We also want to cull blades that are outside of the view-frustum, considering they won't show up in the frame anyway. To determine if
-a grass blade is in the view-frustum, we want to compare the visibility of three points: `v0, v2, and m`, where `m = (1/4)v0 * (1/2)v1 * (1/4)v2`.
-Notice that we aren't using `v1` for the visibility test. This is because the `v1` is a Bezier guide that doesn't represent a position on the grass blade.
-We instead use `m` to approximate the midpoint of our Bezier curve.
-
-If all three points are outside of the view-frustum, we will cull the grass blade. The paper uses a tolerance value for this test so that we are culling
-blades a little more conservatively. This can help with cases in which the Bezier curve is technically not visible, but we might be able to see the blade
-if we consider its width.
-
-#### Distance culling
-
-Similarly to orientation culling, we can end up with grass blades that at large distances are smaller than the size of a pixel. This could lead to additional
-artifacts in our renders. In this case, we can cull grass blades as a function of their distance from the camera.
-
-You are free to define two parameters here.
-* A max distance afterwhich all grass blades will be culled.
-* A number of buckets to place grass blades between the camera and max distance into.
-
-Define a function such that the grass blades in the bucket closest to the camera are kept while an increasing number of grass blades
-are culled with each farther bucket.
-
-### Links
-
-* [Responsive Real-Time Grass Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf)
-* [CIS565 Vulkan samples](https://github.com/CIS565-Fall-2018/Vulkan-Samples)
-* [Official Vulkan documentation](https://www.khronos.org/registry/vulkan/)
-* [Vulkan tutorial](https://vulkan-tutorial.com/)
-* [RenderDoc blog on Vulkan](https://renderdoc.org/vulkan-in-30-minutes.html)
-* [Tessellation tutorial](http://in2gpu.com/2014/07/12/tessellation-tutorial-opengl-4-3/)
+* Orientation: Blades whose normals are perpendicular to the look vector are culled. We can't see these!
+* Frustum: Blades that are outside the viewing frustum are culled.
+* Distance: Blades that are sufficiently far from the camera (less than a pixel in size) are culled. Additionally, more blades are culled as function of distance from the camera (blades are binned into discrete intervals).
 
 Performance
 ------------
@@ -136,3 +100,12 @@ Performance
 
 ## FPS Performance improvements using culling
 
+Links
+------------
+
+* [Responsive Real-Time Grass Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf)
+* [CIS565 Vulkan samples](https://github.com/CIS565-Fall-2018/Vulkan-Samples)
+* [Official Vulkan documentation](https://www.khronos.org/registry/vulkan/)
+* [Vulkan tutorial](https://vulkan-tutorial.com/)
+* [RenderDoc blog on Vulkan](https://renderdoc.org/vulkan-in-30-minutes.html)
+* [Tessellation tutorial](http://in2gpu.com/2014/07/12/tessellation-tutorial-opengl-4-3/)
