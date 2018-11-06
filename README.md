@@ -14,13 +14,6 @@ Vulkan Grass Rendering
 ## Grass Rendering
 
 This project is an implementation of the paper, [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf).
-Please make sure to use this paper as a primary resource while implementing your grass renderers. It does a great job of explaining
-the key algorithms and math you will be using. Below is a brief description of the different components in chronological order of how your renderer will
-execute, but feel free to develop the components in whatever order you prefer.
-
-We recommend starting with trying to display the grass blades without any forces on them before trying to add any forces on the blades themselves. Here is an example of what that may look like:
-
-![](img/grass_basic.gif)
 
 ### Representing Grass as Bezier Curves
 
@@ -40,6 +33,10 @@ We also need to store per-blade characteristics that will help us simulate and t
 We can pack all this data into four `vec4`s, such that `v0.w` holds orientation, `v1.w` holds height, `v2.w` holds width, and 
 `up.w` holds the stiffness coefficient.
 
+### Simulating Forces
+
+There are 3 types of simulating forces, gravity, wind and recovery. We just add them together as the total force. Then determine a translation for `v2` based on the forces as `tv2 = (gravity + recovery + wind) * deltaTime`. Also we need to determine the corrected final positions for `v1` and `v2` using state validation. 
+
 
 ### Culling tests
 
@@ -49,7 +46,7 @@ due to a variety of reasons. Here are some heuristics we can use to cull blades 
 | All culling        | Orientation culling           |
 | ------------- |:-------------:|
 | Do all three culling| Cull blade whose front face direction of the grass blade is perpendicular to the view vector |
-| ![](img/final.gif)  | ![](images/orientation.gif)   |
+| ![](img/final.gif)  | ![](img/orientation.gif)   |
 
 | View-frustum culling       | Distance culling            |
 | ------------- |:-------------:|
@@ -60,7 +57,7 @@ due to a variety of reasons. Here are some heuristics we can use to cull blades 
 
 ![](img/performance.png) 
 
-From the graph we can see that culling improve performance a lot since we don't need to render those culled blades. The performance difference might depend on the diameter we choose for these three kinds of culling. In my test, the distance culling improve performance most. On the other hand, as the number of blades increase, the performance decreases.
+From the graph we can see that culling improve performance a lot since we don't need to render those culled blades. The performance difference might depend on the diameter we choose for these three kinds of culling. In my test, the distance culling improve performance most as blades beyond a maximum distance are removed. For orientation culling, there is only a few of blades got removed since the threshold I set for orientation culling is low. On the other hand, as the number of blades increase, the performance decreases.
 
  
 
