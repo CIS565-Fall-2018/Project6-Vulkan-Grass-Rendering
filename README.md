@@ -10,17 +10,15 @@ Vulkan Grass Rendering
 ![](img/demo.gif)
 
 ### Introduction
-My GPU path tracer produces accurate renders in real-time. The rays are scattered using visually accurate diffuse, reflection, and refraction lighting properties. Techniques such as stream compaction and particular memory allocation help speed up the iteration time. Other features of the path tracer include arbitrary mesh loading and anti-aliasing.
+This repository features real-time grass simulation and rendering using Vulkan, based on the paper [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf). The grass simulates forces such as gravity, recovery, and wind for realistic, tunable behavior. Additionally, grass blades can be selectively rendered based on viewport position, orientation, and distance. After describing the general graphics pipeline used to achieve these techniques, I will describe how they individually impact performance. With simulation and culling, the render performs at over 1500 frames per second.
 
-Some terms will be important for understanding the analysis. Each ray cast from the camera has a maximum number of **bounces** carrying the light before it terminates. When every pixel's non-deterministic path reaches the maximum bounces or does not collide with anything in the scene, one **iteration** is completed. Performance analysis will focus on number of bounces and average iteration time for various features.
-
-### Algorithm
-1. Initialize array of paths (project a ray from camera through each pixel)
-2. Compute intersection with ray along its path
-3. Stream compaction to remove terminated paths (optional)
-4. Shade rays that intersected something using reflect, refract, or diffuse lighting to multiply with the current color of the ray
-5. Repeat steps 2-4 until max bounces reached or all paths terminated
-6. Add iteration results to the image, repeating steps 1-5 until max iterations reached
+### Pipeline
+1. Set up the Vulkan graphics pipeline (send data to shaders using descriptor sets and descriptor set layouts)
+2. Simulate wind, gravity, and recovery forces in the compute shader
+3. Cull (do not render) grass blades based on orientation, distance, and view-frustum
+4. Grass vertex shader to transform positions and calculate bitangent, up vectors
+5. Tesselation shader to subdivide grass into Bezier splines for more detail
+6. Fragment shader to calculate final color by interpolating vertical position on the blade
 
 ### Culling
 ![Distance Culling](img/cull_distance.gif)
