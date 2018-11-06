@@ -156,8 +156,8 @@ void main() {
 				   && inBounds(ndcm.x, hm) && inBounds(ndcm.y, hm) && inBounds(ndcm.z, hm));
 
 	//distance culling
-	vec3 camera = (invView * vec4(0.f, 0.f, 0.f, 1.f)).xyz;
-	float dproj = length(v0 - camera_pos - up * dot(up, (v0 - camera)));
+	vec3 c = (invView * vec4(0.f, 0.f, 0.f, 1.f)).xyz;
+	float dproj = length(v0 - c - up * dot(up, (v0 - c)));
 	float dmax = 10.0;
 	int num = 10;
 

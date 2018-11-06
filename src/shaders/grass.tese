@@ -24,12 +24,12 @@ void main() {
     float v = gl_TessCoord.y;
 
 	// TODO: Use u and v to parameterize along the grass blade and output positions for each vertex of the grass blade
-	vec3 p0 = gl_in[0].gl_Position.xyz;
-	vec3 p1 = inV1.xyz;
-	vec3 p2 = inV2.xyz;
+	vec3 v0 = gl_in[0].gl_Position.xyz;
+	vec3 v1 = inV1.xyz;
+	vec3 v2 = inV2.xyz;
 
-	vec3 a = p0 + v * (p1 - p0);
-	vec3 b = p1 + v * (p2 - p1);
+	vec3 a = v0 + v * (v1 - v0);
+	vec3 b = v1 + v * (v2 - v1);
 	vec3 c = a + v * (b - a);
 
 	float o = inV0.w;
@@ -39,8 +39,8 @@ void main() {
 
 	vec3 t1 = vec3(cos(o), 0, sin(o));
 	vec3 dc =  t1 * w;
-	vec3 c0 = c - dc * 0.5;
-	vec3 c1 = c + dc * 0.5;
+	vec3 c0 = c - dc;
+	vec3 c1 = c + dc;
 
 	vec3 t0 = normalize(b - a);
 
