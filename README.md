@@ -23,15 +23,15 @@ Some terms will be important for understanding the analysis. Each ray cast from 
 6. Add iteration results to the image, repeating steps 1-5 until max iterations reached
 
 ### Culling
-![Distance Culling](img/cull-distance.gif)
+![Distance Culling](img/cull_distance.gif)
 
 Distance Culling - Render less grass the further the camera is away from the blades. Has parameters for number of buckets that grass is grouped in for distance culling as well as the interval between these buckets.
 
-![Frustum Culling](img/cull-frustum.gif)
+![Frustum Culling](img/cull_frustum.gif)
 
 Frustum Culling - Do not render grass that is outside the viewport. Has tunable parameter for how far the grass must be outside of the viewport to not be rendered.
 
-![Orientation Culling](img/cull-orientation.gif)
+![Orientation Culling](img/cull_orientation.gif)
 
 Orientation Culling - Do not render grass that is facing perpendicular to the camera. Has tunable parameter for what the angle between camera and grass blade must be to not be rendered.
 
