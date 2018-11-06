@@ -10,7 +10,7 @@ Vulkan Grass Rendering
 ![](img/demo.gif)
 
 ### Introduction
-This repository features real-time grass simulation and rendering using Vulkan, based on the paper [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf). The grass simulates forces such as gravity, recovery, and wind for realistic, tunable behavior. Additionally, grass blades can be selectively rendered based on viewport position, orientation, and distance. After describing the general graphics pipeline used to achieve these techniques, I will describe how they individually impact performance. With simulation and culling, the render performs at over 1500 frames per second.
+This repository features real-time grass simulation and rendering using Vulkan, based on the paper [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf). The grass simulates forces such as gravity, recovery, and wind for realistic, tunable behavior. Additionally, grass blades can be selectively rendered based on viewport position, orientation, and distance. After describing the general graphics pipeline used to achieve these techniques, I will describe how they individually impact performance. With simulation and culling, the grass rendering performs at over 1500 frames per second.
 
 ### Pipeline
 1. Set up the Vulkan graphics pipeline (send data to shaders using descriptor sets and descriptor set layouts)
@@ -21,6 +21,8 @@ This repository features real-time grass simulation and rendering using Vulkan, 
 6. Fragment shader to calculate final color by interpolating vertical position on the blade
 
 ### Culling
+Below are gif images of the grass blades that are culled using the techniques described.
+
 ![Distance Culling](img/cull_distance.gif)
 
 Distance Culling - Render less grass the further the camera is away from the blades. Has parameters for number of buckets that grass is grouped in for distance culling as well as the interval between these buckets.
@@ -34,6 +36,8 @@ Frustum Culling - Do not render grass that is outside the viewport. Has tunable 
 Orientation Culling - Do not render grass that is facing perpendicular to the camera. Has tunable parameter for what the angle between camera and grass blade must be to not be rendered.
 
 ### Analysis
+In the graph below, features are added incrementally from left to right and performance is measured in the form of frames per second.
+
 ![Static Grass](img/analysis.png)
 
 Clearly, the fps increases with the addition of new culling techniques. Some of these techniques are conditional, for example, frustum culling will only hurt performance if every blade of grass is in the viewport. However, in the general case where the camera is somewhere inside the scene, all culling methods boost performance by about 50 fps or more.
