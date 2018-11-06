@@ -15,6 +15,8 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     // TODO: Compute fragment color
-	float lambert = clamp(dot(f_nor.xyz, vec3(0.57735, -0.57735, -0.57735)), 0.15, 1.0);
-	outColor = vec4(vec3(0.376471, 0.501961, 0.219608) * lambert, 1.0);
+	float lambert = clamp(dot(f_nor.xyz, vec3(0.57735, -0.57735, -0.57735)), 0.2, 1.0);
+	vec3 col1 = vec3(0.35, 0.5, 0.2);
+	vec3 col2 = vec3(0.58, 0.82, 0.33);
+	outColor = vec4(mix(col1, col2, f_uv.y) * lambert, 1.0);
 }

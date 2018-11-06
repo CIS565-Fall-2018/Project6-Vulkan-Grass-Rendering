@@ -20,6 +20,7 @@ private:
     VkBuffer timeBuffer;
     VkDeviceMemory timeBufferMemory;
     Time time;
+	int totalFrames;
     
     void* mappedData;
 

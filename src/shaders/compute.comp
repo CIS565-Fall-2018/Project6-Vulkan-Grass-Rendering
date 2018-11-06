@@ -78,12 +78,12 @@ void main() {
 	// Recovery
 	vec3 recovery = (up * height + v0 - v2) * stiff;
 
-	// Wind - helicopter!
-	vec3 wDir = normalize(cross(vec3(0, 1, 0), vec3(v0.x, 0, v0.z)));
-	float wMag = abs(cos(totalTime + v0.z / v0.x)) * 30 * abs(dot(tangent, wDir));
-	vec3 wind = wMag * wDir;
+	// Wind
+	vec3 windDir = vec3(cos(angle), sin(angle), cos(angle));
+	float windMag = abs(cos(totalTime + v0.z / v0.x)) * 30 * abs(dot(tangent, windDir));
+	vec3 wind = windMag * windDir;
 
-	v2 += (gravity) * deltaTime;
+	v2 += (recovery + gravity + wind) * deltaTime;
 	v2 = v2 - up * min(dot(up, v2 - v0), 0);
 
 	// New v1
@@ -94,25 +94,55 @@ void main() {
 	float L = (2 * distance(v0, v2) + 1 * (distance(v0, v1) + distance(v1, v2))) / 3;
 	v1 = v0 + (height / L) * (v1 - v0);
 	v2 = v1 + (height / L) * (v2 - v1);
-
+	
 	// TODO: Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
 	bool culled = false;
 
-	// Orientation
 	mat4 invView = inverse(camera.view);
 	vec3 eye = (invView * vec4(0, 0, 0, 1)).xyz;
 	vec3 view = normalize(v0 - eye);
 
+	// Orientation
 	if (abs(dot(front, view)) < 0.2) {
 		culled = true;
 	}
 
+	// Distance
+	if (!culled) {
+		float proj = length(v0 - eye);
+		float interval = 10.0;
+		float buckets = 5;
+		if ((mod(i, buckets) + 1) * interval < proj) {
+			culled = true;
+		}
+	}
+
+	// Frustum
+	float epsilon = 2.0;
+	if (!culled) {
+		mat4 viewProj = camera.proj * camera.view;
+
+		vec4 fv0 = viewProj * vec4(v0, 1);
+		vec4 fv2 = viewProj * vec4(v2, 1);
+		vec3 m = 0.25 * v0 + 0.5 * v1 + 0.25 * v2;
+		vec4 fm = viewProj * vec4(m, 1);
+
+		if (!inBounds(fv0.x, fv0.w + epsilon) || !inBounds(fv0.y, fv0.w + epsilon)) {
+			culled = true;
+		} else if (!inBounds(fv2.x, fv2.w + epsilon) || !inBounds(fv2.y, fv2.w + epsilon)) {
+			culled = true;
+		} else if (!inBounds(fm.x, fm.w + epsilon) || !inBounds(fm.y, fm.w + epsilon)) {
+			culled = true;
+		}
+	}
+
+	// Output
 	if(!culled) {
-		/*inputBlades.blades[i].v0 = vec4(v0, angle);
+		inputBlades.blades[i].v0 = vec4(v0, angle);
 		inputBlades.blades[i].v1 = vec4(v1, height);
 		inputBlades.blades[i].v2 = vec4(v2, width);
-		inputBlades.blades[i].up = vec4(up, stiff);*/
+		inputBlades.blades[i].up = vec4(up, stiff);
 		uint vertexCount = atomicAdd(numBlades.vertexCount, 1);
 		culledBlades.blades[vertexCount] = inputBlades.blades[i];
 	}
