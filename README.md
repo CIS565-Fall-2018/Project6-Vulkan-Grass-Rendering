@@ -19,8 +19,12 @@ This project implements a grass simulation using Vulkan and GPU hardware. It is 
 
 The following graph shows the frames per second as the number of blades increase for culling and no culling grass simulations. Clearly, the culling grass simulation is faster than the no culling grass simulation. This is because in the culling grass simulation, we ignore rendering blades of grass that do not contribute positively to a given frame. This saves a lot of processing time. Interestingly enough, as the number of blades increase, the gap between the performance of the culling grass simulation and the no culling grass simulation increases. This is probably because the number of visible grass blades stay relatively the same, while the number of occluded grass blades increase.  
 
+
 ![](./img/graph-1.png)
+
 
 The following graph breaks down culling even further, and shows the frames per second as the number of blades increase for orientation culling, view-frustum culling, and distance culling. Orientation culling ignores blades of grass that are not facing the camera because our blades do not have width. View-frustum culling ignores blades of grass that are in the scene, but not visible from the camera. Distance culling ignores blades of grass that are smaller than a pixel large. We can see from the graph that view-frustum culling is the most efficient, then distance culling, and finally orientation culling. This is probably due to the fact that the camera does not typically need to capture a whole field of grass, and it is more common for blades of grass to be far away than it is for blades of grass to not face the camera.
 
+
 ![](./img/graph-2.png)
+
