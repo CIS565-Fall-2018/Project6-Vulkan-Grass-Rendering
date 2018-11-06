@@ -33,6 +33,8 @@ We also need to store per-blade characteristics that will help us simulate and t
 We can pack all this data into four `vec4`s, such that `v0.w` holds orientation, `v1.w` holds height, `v2.w` holds width, and 
 `up.w` holds the stiffness coefficient.
 
+![](img/blade_model.jpg)
+
 ### Simulating Forces
 
 There are 3 types of simulating forces, gravity, wind and recovery. We just add them together as the total force. Then determine a translation for `v2` based on the forces as `tv2 = (gravity + recovery + wind) * deltaTime`. Also we need to determine the corrected final positions for `v1` and `v2` using state validation. 
