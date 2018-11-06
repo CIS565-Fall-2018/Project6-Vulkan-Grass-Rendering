@@ -21,7 +21,7 @@ struct Blade {
     vec4 up;
 };
 
-// TODO: Add bindings to:
+// TODONE: Add bindings to:
 // 1. Store the input blades
 // 2. Write out the culled blades
 // 3. Write the total number of blades remaining
@@ -29,28 +29,121 @@ struct Blade {
 // The project is using vkCmdDrawIndirect to use a buffer as the arguments for a draw call
 // This is sort of an advanced feature so we've showed you what this buffer should look like
 //
-// layout(set = ???, binding = ???) buffer NumBlades {
-// 	  uint vertexCount;   // Write the number of blades remaining here
-// 	  uint instanceCount; // = 1
-// 	  uint firstVertex;   // = 0
-// 	  uint firstInstance; // = 0
-// } numBlades;
+layout(set = 2, binding = 0) buffer InputBlades {
+	Blade blades[];
+} inputBlades;
+
+layout(set = 2, binding = 1) buffer CulledBlades {
+	Blade blades[];
+} culledBlades;
+
+layout(set = 2, binding = 2) buffer NumBlades {
+	uint vertexCount;
+ 	uint instanceCount;
+ 	uint firstVertex;
+ 	uint firstInstance;
+} numBlades;
 
 bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
 }
 
 void main() {
+	uint i = gl_GlobalInvocationID.x;
+
 	// Reset the number of blades to 0
-	if (gl_GlobalInvocationID.x == 0) {
-		// numBlades.vertexCount = 0;
+	if (i == 0) {
+		numBlades.vertexCount = 0;
 	}
 	barrier(); // Wait till all threads reach this point
 
     // TODO: Apply forces on every blade and update the vertices in the buffer
+	Blade blade = inputBlades.blades[i];
+	float angle = blade.v0.w;
+	float height = blade.v1.w;
+	float width = blade.v2.w;
+	float stiff = blade.up.w;
+	vec3 up = blade.up.xyz;
+	vec3 v0 = blade.v0.xyz;
+	vec3 v1 = blade.v1.xyz;
+	vec3 v2 = blade.v2.xyz;
+	vec3 front = vec3(cos(angle), 0.0, sin(angle));
+	vec3 tangent = normalize(cross(up, front));
 
+	// Gravity
+	vec3 g1 = vec3(0.0, -9.8, 0.0);
+	vec3 g2 = 0.25 * 9.8 * front;
+	vec3 gravity = g1 + g2;
+
+	// Recovery
+	vec3 recovery = (up * height + v0 - v2) * stiff;
+
+	// Wind
+	vec3 windDir = vec3(cos(angle), sin(angle), cos(angle));
+	float windMag = abs(cos(totalTime + v0.z / v0.x)) * 30 * abs(dot(tangent, windDir));
+	vec3 wind = windMag * windDir;
+
+	v2 += (recovery + gravity + wind) * deltaTime;
+	v2 = v2 - up * min(dot(up, v2 - v0), 0);
+
+	// New v1
+	float proj = length(v2 - v0 - up * (dot(v2 - v0, up)));
+	v1 = v0 + height * up * max(1 - (proj / height), 0.05 * max(proj / height, 1));
+
+	// Length of curve
+	float L = (2 * distance(v0, v2) + 1 * (distance(v0, v1) + distance(v1, v2))) / 3;
+	v1 = v0 + (height / L) * (v1 - v0);
+	v2 = v1 + (height / L) * (v2 - v1);
+	
 	// TODO: Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
-	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
-	// You want to write the visible blades to the buffer without write conflicts between threads
+	bool culled = false;
+
+	mat4 invView = inverse(camera.view);
+	vec3 eye = (invView * vec4(0, 0, 0, 1)).xyz;
+	vec3 view = normalize(v0 - eye);
+
+	// Orientation
+	if (abs(dot(front, view)) < 0.2) {
+		culled = true;
+	}
+
+	// Distance
+	if (!culled) {
+		float proj = length(v0 - eye);
+		float interval = 10.0;
+		float buckets = 5;
+		if ((mod(i, buckets) + 1) * interval < proj) {
+			culled = true;
+		}
+	}
+
+	// Frustum
+	float epsilon = 2.0;
+	if (!culled) {
+		mat4 viewProj = camera.proj * camera.view;
+
+		vec4 fv0 = viewProj * vec4(v0, 1);
+		vec4 fv2 = viewProj * vec4(v2, 1);
+		vec3 m = 0.25 * v0 + 0.5 * v1 + 0.25 * v2;
+		vec4 fm = viewProj * vec4(m, 1);
+
+		if (!inBounds(fv0.x, fv0.w + epsilon) || !inBounds(fv0.y, fv0.w + epsilon)) {
+			culled = true;
+		} else if (!inBounds(fv2.x, fv2.w + epsilon) || !inBounds(fv2.y, fv2.w + epsilon)) {
+			culled = true;
+		} else if (!inBounds(fm.x, fm.w + epsilon) || !inBounds(fm.y, fm.w + epsilon)) {
+			culled = true;
+		}
+	}
+
+	// Output
+	if(!culled) {
+		inputBlades.blades[i].v0 = vec4(v0, angle);
+		inputBlades.blades[i].v1 = vec4(v1, height);
+		inputBlades.blades[i].v2 = vec4(v2, width);
+		inputBlades.blades[i].up = vec4(up, stiff);
+		uint vertexCount = atomicAdd(numBlades.vertexCount, 1);
+		culledBlades.blades[vertexCount] = inputBlades.blades[i];
+	}
 }
