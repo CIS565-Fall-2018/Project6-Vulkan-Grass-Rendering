@@ -71,8 +71,8 @@ bool distanceCulled(vec3 v0, vec3 up){
     // cameraSpace_v0 is the same as world space v0 - world space camera pos
     vec3 cameraSpace_v0 = (camera.view * vec4(v0, 1)).xyz; 
     float dproj = length(cameraSpace_v0 - up * dot(up, cameraSpace_v0));
-    float dmax = 40;
-    int buckets = 6;
+    float dmax = 60;
+    int buckets = 8;
 
     return gl_GlobalInvocationID.x % buckets > buckets * (1 - dproj / dmax);
 }
