@@ -49,13 +49,11 @@ due to a variety of reasons. Here are some heuristics we can use to cull blades 
 | All culling        | Orientation culling           |
 | ------------- |:-------------:|
 | Do all three culling| Cull blade whose front face direction of the grass blade is perpendicular to the view vector |
-| ------------- |:-------------:|
 | ![](img/final.gif)  | ![](images/orientation.gif)   |
 
 | View-frustum culling       | Distance culling            |
 | ------------- |:-------------:|
 | Cull blades that are outside of the view-frustum | Cull grass blades that at large distances are smaller than the size of a pixel |
-| ------------- |:-------------:|
 | ![](img/frustum.gif)      | ![](img/distance.gif)   |
 
 ## Performance Analysis
