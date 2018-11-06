@@ -46,6 +46,7 @@ void main() {
 
 	norm = normalize(cross(t0, t1));
 
+	// basic shapes, triangle interpolation
 	float t = u + 0.5 * v - u * v;
 	vec3 pxyz = (1.0 - t) * c0 + t * c1;
 	pos = camera.proj * camera.view * vec4(pxyz, 1.0);

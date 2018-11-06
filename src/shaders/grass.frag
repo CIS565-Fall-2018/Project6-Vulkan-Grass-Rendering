@@ -20,10 +20,10 @@ void main() {
 	vec3 color1 = vec3(0.2, 0.5, 0.1);
 	vec3 color2 = vec3(0.6, 0.8, 0.3);
 	vec3 color = mix(color1, color2, uv.y);
-	vec3 light_pos = vec3(5.f, 5.f, 5.f);
+	vec3 light_pos = vec3(0.f, 0.f, 0.f);
 	float light_dist = distance(light_pos, pos.xyz);
 	vec3 L = (light_pos - pos.xyz) / light_dist;
-	float lambertTerm = dot(L, norm);
+	float lambertTerm = dot(norm, L);
 	lambertTerm = max(lambertTerm , 0.f);
     outColor = vec4((lambertTerm + ambientTerm) * color, 1.0);
 }

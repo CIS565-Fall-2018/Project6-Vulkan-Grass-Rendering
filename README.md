@@ -59,12 +59,11 @@ due to a variety of reasons. Here are some heuristics we can use to cull blades 
 
 ![](img/performance.png) 
 
-From the graph we can see that culling improve performance a lot since we don't need to render those culled blades. The performance difference might depend on the diameter we choose for these three kinds of culling. In my test, the distance culling improve performance most as blades beyond a maximum distance are removed. For orientation culling, there is only a few of blades got removed since the threshold I set for orientation culling is low. On the other hand, as the number of blades increase, the performance decreases.
+From the graph we can see that culling process improve performance a lot since we don't need to render those culled blades. The performance difference might depend on the parameter and threshold we choose for these three kinds of culling. In my test, the distance culling improve performance most as blades beyond a maximum distance are removed. For orientation culling, there is only a few of blades got removed since the threshold I set for orientation culling is low. On the other hand, as the number of blades increase, the performance decreases since there are more blades to be renderred.
 
  
 
 ## Resources
-
 ### Links
 
 The following resources may be useful for this project.
