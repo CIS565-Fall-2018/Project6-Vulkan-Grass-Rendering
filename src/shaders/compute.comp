@@ -43,6 +43,9 @@ layout(set = 2, binding = 2) buffer NumBlades {
 const uint MAX_NUM_BLADES = 8192;
 const vec3 WORLD_GRAVITY = vec3(0.0, -9.8, 0.0);
 const float BEZIER_DEGREE = 2.0;
+const float VIEW_CULLING_TOLERANCE = 2.0;
+const float DISTANCE_CULLING_VALUE = 20.0;
+const float DISTANCE_CULLING_N = 10.0;
 
 // TODO: Add bindings to:
 // 1. Store the input blades
@@ -95,9 +98,10 @@ void main() {
     vec3 v2 = blade.v2.xyz;
     vec3 up = blade.up.xyz;
 
+    vec3 faceDirection = normalize(cross(up, vec3(sin(directionalAngle), 0.0, cos(directionalAngle))));
+
     // Calculate Gravity accounted for grass's face
-    vec3 faceNormal = normalize(cross(up, vec3(sin(directionalAngle), 0.0, cos(directionalAngle))));
-    vec3 gF = 0.25 * 9.8 * faceNormal;
+    vec3 gF = 0.25 * 9.8 * faceDirection;
     vec3 gravityForce = WORLD_GRAVITY + gF;
 
     // Calculate Recovery force
@@ -126,6 +130,30 @@ void main() {
     float r = h / L;
     vec3 v1corr = v0 + r * (v1 - v0);
     vec3 v2corr = v1corr + r * (v2 - v1);
+
+    // Orientation Culling
+    vec4 faceViewSpace = camera.view * vec4(faceDirection, 0.0f);
+    if (dot(normalize(faceViewSpace.xyz), vec3(0, 0, 1)) < 0.1) {
+        return;
+    }
+
+    // Frustum Culling
+    vec4 v0Clip = camera.proj * camera.view * vec4(v0, 1.0);
+
+    float wCoord = v0Clip.w + VIEW_CULLING_TOLERANCE;
+
+    if (!inBounds(v0Clip.x, wCoord) || !inBounds(v0Clip.y, wCoord) || !inBounds(v0Clip.z, wCoord)) {
+        return;
+    }
+
+    // Distance Culling
+    vec4 cameraPos = camera.view * vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    float dProj = length(v0 - cameraPos.xyz - up * dot(v0 - cameraPos.xyz, up));
+
+    if (mod(globalThreadIdx, DISTANCE_CULLING_N) > floor(DISTANCE_CULLING_N * (1.0f - (dProj / DISTANCE_CULLING_VALUE)))) {
+        return;
+    }
+
 
     // Update Storage Buffer
     allBlades.blades[globalThreadIdx].v1.xyz = v1corr.xyz;
