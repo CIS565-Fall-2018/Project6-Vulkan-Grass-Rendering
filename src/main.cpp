@@ -62,6 +62,9 @@ namespace {
 
             previousY = yPosition;
         }
+
+        // used to figure out personal preference for starting rotation of camera
+        // printf("updated camera rotation: (%f, %f, %f)", camera->GetR(), camera->GetTheta(), camera->GetPhi());
     }
 }
 
@@ -148,6 +151,7 @@ int main() {
         scene->UpdateTime();
         renderer->Frame();
     }
+    printf("average frames per second: %f", scene->GetTotalFrames()/scene->GetTotalTime());
 
     vkDeviceWaitIdle(device->GetVkDevice());
 

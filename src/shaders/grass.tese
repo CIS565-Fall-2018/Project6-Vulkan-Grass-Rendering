@@ -24,11 +24,13 @@ void main() {
 	uv = vec2(u, v);
 
 	// TODO: Use u and v to parameterize along the grass blade and output positions for each vertex of the grass blade
+	
 	vec3 a = v0[0].xyz + v * (v1[0].xyz - v0[0].xyz);
 	vec3 b = v1[0].xyz + v * (v2[0].xyz - v1[0].xyz);
 	vec3 c = a + v * (b - a);
 
- 	vec3 t1 = vec3(sin(v0[0].w), 0.0, cos(v0[0].w)); // bitangent
+	// bitangent
+ 	vec3 t1 = vec3(sin(v0[0].w), 0.0, cos(v0[0].w)); 
 	float w = v2[0].w;
 
 	vec3 c0 = c - w * t1;

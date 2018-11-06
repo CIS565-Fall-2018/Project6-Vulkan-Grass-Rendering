@@ -13,10 +13,10 @@ layout(location = 2) in vec2 uv;
 
 layout(location = 0) out vec4 outColor;
 
-void main() {
+void main() 
+{
     // TODO: Compute fragment color
-
-	// color for the base, color for the tip, lerp in between
+	//  give color for the base, color for the tip, lerp in between
 
 	// too green
 	//outColor = mix(vec4(0.0, 0.2, 0.0, 1.0), vec4(0.0, 0.4, 0.0, 1.0), uv.y);

@@ -63,7 +63,8 @@ void main()
 	}
 	barrier(); // Wait till all threads reach this point
 
-    // TODO: Apply forces on every blade and update the vertices in the buffer
+    // TODO: SIMULATING FORCES
+	//Apply forces on every blade and update the vertices in the buffer
 	
 	uint index = gl_GlobalInvocationID.x;
 	Blade blade = inputBlades.blades[index];
@@ -77,27 +78,27 @@ void main()
 	vec3 v2 = blade.v2.xyz;
 	vec3 up = blade.up.xyz;
 
-	// gravity
+	// GRAVITY
 	vec3 gE = vec3(0.0, -9.8, 0.0);
 	vec3 f = normalize(cross(up, vec3(sin(blade.v0.w), 0.0, cos(blade.v0.w))));
 	vec3 gF = 0.25 * 9.8 * f;
 	vec3 gravity = gE + gF;
 
-	// recovery
+	// RECOVERY
 	vec3 recovery = (v0 + h * up - v2) * stiff;
 
-	// wind
+	// WIND
 	// primary force moves all the blades by a magnitude of wind direction
 	// secondary force fluctuates the blades by a small amount to add randomness
 	float primaryForce = 7.0;
 	float secondaryForce = cos(6.28 * (totalTime + 7.0*v0.x + 13*v0.z));
-	// see link for parametric path used in dir:
+	// see link for parametric path used for dir: 
 	// http://jwilson.coe.uga.edu/EMAT6680Fa08/Broderick/assignment10/assignment10.html
 	vec3 dir = normalize(vec3( sin( 0.3 * 12.0/13.0 * totalTime ), 0.0, 3 * sin( 0.3 * totalTime) ));
 	float fd = 1 - abs(dot(normalize(dir), normalize(v2 - v0)));
 	float fr = dot((v2 - v0), up) / h;
 	vec3 wind = (primaryForce * dir * fd * fr) + (secondaryForce * dir * fd * fr);
- 
+	
 	v2 += (recovery + gravity + wind) * deltaTime;
 
 	// validation
@@ -118,23 +119,24 @@ void main()
 	inputBlades.blades[index].v2.xyz = v2corr;
 
 
-	// TODO: Cull blades that are too far away or not in the camera frustum and write them
+	// TODO: CULLING
+	// Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
 
 	vec4 eye = inverse(camera.view) * vec4(0.0, 0.0, 0.0, 1.0);
 	
-	// orientation
+	// ORIENTATION CULLING
 	vec3 dir_c = normalize(eye.xyz - v0); vec3 dir_b = f;						      
 	if(dot(dir_c, dir_b) > 0.9) return;
 	
-	// view-frustum
+	// VIEW-FRUSTUM CULLING
 	vec4 v0_prime = camera.proj * camera.view * vec4(v0, 1.0);
-	float hg	= v0_prime.w + 2.0;
+	float hg = v0_prime.w + 2.0;
 	if(!inBounds(v0_prime.x, hg) || !inBounds(v0_prime.y, hg) || !inBounds(v0_prime.z, hg)) return;
 	
-	// distance
+	// DISTANCE CULLING
 	float d_proj = length(v0 - eye.xyz - up * dot(up, v0 - eye.xyz));
  	if(mod(index, 10.0) > floor(10.0 * (1 - (d_proj / 50.0)))) return;
 
