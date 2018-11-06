@@ -15,11 +15,37 @@ layout(set = 1, binding = 0) uniform Time {
 };
 
 struct Blade {
+    // Position and direction
     vec4 v0;
+    // Bezier point and height
     vec4 v1;
+    // Physical model guide and width
     vec4 v2;
+    // Up vector and stiffness coefficient
     vec4 up;
 };
+
+layout(set = 2, binding = 0) buffer AllBlades {
+    Blade blades[];
+} allBlades;
+
+layout(set = 2, binding = 1) buffer CulledBlades {
+    Blade blades[];
+} culledBlades;
+
+layout(set = 2, binding = 2) buffer NumBlades {
+   uint vertexCount;   // Write the number of blades remaining here
+   uint instanceCount; // = 1
+   uint firstVertex;   // = 0
+   uint firstInstance; // = 0
+} numBlades;
+
+const uint MAX_NUM_BLADES = 1 << 16;
+const vec3 WORLD_GRAVITY = vec3(0.0, -9.8, 0.0);
+const float BEZIER_DEGREE = 2.0;
+const float VIEW_CULLING_TOLERANCE = 2.0;
+const float DISTANCE_CULLING_VALUE = 50.0;
+const float DISTANCE_CULLING_N = 20.0;
 
 // TODO: Add bindings to:
 // 1. Store the input blades
@@ -40,17 +66,98 @@ bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
 }
 
+vec3 windFunction(vec3 v0)
+{
+    return vec3(1, 0, 0) * cos(totalTime);
+}
+
 void main() {
 	// Reset the number of blades to 0
 	if (gl_GlobalInvocationID.x == 0) {
-		// numBlades.vertexCount = 0;
+		numBlades.vertexCount = 0;
 	}
 	barrier(); // Wait till all threads reach this point
 
-    // TODO: Apply forces on every blade and update the vertices in the buffer
+    uint globalThreadIdx = gl_GlobalInvocationID.x;
 
-	// TODO: Cull blades that are too far away or not in the camera frustum and write them
-	// to the culled blades buffer
-	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
-	// You want to write the visible blades to the buffer without write conflicts between threads
+    if (globalThreadIdx > MAX_NUM_BLADES) {
+        return;
+    }
+
+    Blade blade = allBlades.blades[globalThreadIdx];
+
+    // get packed data
+    float h = blade.v1.w;
+    float w = blade.v2.w;
+    float stiffness = blade.up.w;
+    float directionalAngle = blade.v0.w;
+
+    // get the 4 vectors
+    vec3 v0 = blade.v0.xyz;
+    vec3 v1 = blade.v1.xyz;
+    vec3 v2 = blade.v2.xyz;
+    vec3 up = blade.up.xyz;
+
+    vec3 faceDirection = normalize(cross(up, vec3(sin(directionalAngle), 0.0, cos(directionalAngle))));
+
+    // Calculate Gravity accounted for grass's face
+    vec3 gF = 0.25 * 9.8 * faceDirection;
+    vec3 gravityForce = WORLD_GRAVITY + gF;
+
+    // Calculate Recovery force
+    vec3 v2Original = v0 + h * up;
+    vec3 recoveryForce = (v2Original - v2) * stiffness;
+
+    // Calculate Wind force
+    vec3 windValueAtV0 = windFunction(v0);
+    float fd = 1.0 - abs(dot(normalize(windValueAtV0), normalize(v2 - v0)));
+    float fr = dot((v2 - v0), up) / h;
+    float theta = fd * fr;
+    vec3 windForce = windValueAtV0 * theta;
+
+    // Accumulate all forces
+    v2 += (recoveryForce + gravityForce + windForce) * deltaTime;
+
+    // State Validation
+    v2 = v2 - up * min(dot(up, v2 - v0), 0.0);
+    float lproj = length(v2 - v0 - up * dot(v2 - v0, up));
+    v1 = v0 + h * up * max(1.0 - (lproj / h), 0.05 * max(lproj / h, 1.0));
+
+    float L0 = distance(v0, v2);
+    float L1 = distance(v0, v1) + distance(v1, v2);
+    float L = ((2.0 * L0) + (BEZIER_DEGREE - 1.0) * L1) / (BEZIER_DEGREE + 1.0);
+
+    float r = h / L;
+    vec3 v1corr = v0 + r * (v1 - v0);
+    vec3 v2corr = v1corr + r * (v2 - v1);
+
+    // Orientation Culling
+    vec4 faceViewSpace = camera.view * vec4(faceDirection, 0.0f);
+    if (dot(normalize(faceViewSpace.xyz), vec3(0, 0, 1)) < 0.1) {
+        return;
+    }
+
+    // Frustum Culling
+    vec4 v0Clip = camera.proj * camera.view * vec4(v0, 1.0);
+
+    float wCoord = v0Clip.w + VIEW_CULLING_TOLERANCE;
+
+    if (!inBounds(v0Clip.x, wCoord) || !inBounds(v0Clip.y, wCoord) || !inBounds(v0Clip.z, wCoord)) {
+        return;
+    }
+
+    // Distance Culling
+    vec4 cameraPos = camera.view * vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    float dProj = length(v0 - cameraPos.xyz - up * dot(v0 - cameraPos.xyz, up));
+
+    if (mod(globalThreadIdx, DISTANCE_CULLING_N) > floor(DISTANCE_CULLING_N * (1.0f - (dProj / DISTANCE_CULLING_VALUE)))) {
+        return;
+    }
+
+
+    // Update Storage Buffer
+    allBlades.blades[globalThreadIdx].v1.xyz = v1corr.xyz;
+    allBlades.blades[globalThreadIdx].v2.xyz = v2corr.xyz;
+
+    culledBlades.blades[atomicAdd(numBlades.vertexCount, 1)] = allBlades.blades[globalThreadIdx];
 }

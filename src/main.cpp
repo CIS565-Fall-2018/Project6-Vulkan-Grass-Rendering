@@ -67,7 +67,7 @@ namespace {
 
 int main() {
     static constexpr char* applicationName = "Vulkan Grass Rendering";
-    InitializeWindow(640, 480, applicationName);
+    InitializeWindow(1280, 720, applicationName);
 
     unsigned int glfwExtensionCount = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -116,7 +116,7 @@ int main() {
         grassImageMemory
     );
 
-    float planeDim = 15.f;
+    float planeDim = 30.f;
     float halfWidth = planeDim * 0.5f;
     Model* plane = new Model(device, transferCommandPool,
         {
@@ -143,7 +143,24 @@ int main() {
     glfwSetMouseButtonCallback(GetGLFWWindow(), mouseDownCallback);
     glfwSetCursorPosCallback(GetGLFWWindow(), mouseMoveCallback);
 
+    double previousStatsTime = glfwGetTime();
+    int frameCount{0};
+
     while (!ShouldQuit()) {
+
+      const double currentTime = glfwGetTime();
+
+      const double statsTimeDelta = currentTime - previousStatsTime;
+      frameCount++;
+
+      if (statsTimeDelta >= 1.0) {
+        std::string windowTitle = std::string("FPS: " + std::to_string(frameCount) + " - Frame Time: " + std::to_string(1000.0 / frameCount) + "ms");
+        glfwSetWindowTitle(GetGLFWWindow(), windowTitle.c_str());
+
+        frameCount = 0;
+        previousStatsTime = currentTime;
+      }
+
         glfwPollEvents();
         scene->UpdateTime();
         renderer->Frame();
