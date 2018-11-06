@@ -13,7 +13,7 @@ Vulkan Grass Rendering
 
 ## Description
 
-This project implements a grass simulation using Vulkan and GPU hardware. It is based on the paper: [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf). Features include binding resources, gravity simulation, recovery simulation, wind simulation, orientation culling, view-frustum culling, and distance culling.
+This project implements a grass simulation using Vulkan and GPU hardware. It is based on the paper: [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf). Features include representing grass as bezier curves, handling storage buffers, gravity simulation, recovery simulation, wind simulation, orientation culling, view-frustum culling, and distance culling.
 
 ## Performance Analysis
 
