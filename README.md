@@ -99,9 +99,13 @@ Performance
 
 #### FPS Performance as a function of number of grass blades
 
+We see in the below graph that as the number of grass blades increases, our performance (in FPS) decreases (Note: x-axis is log scale).
+
 ![pic1](img/FPS_vs_Grass.png)
 
 #### FPS Performance improvements using culling
+
+As expected, each successive culling operation improves performance. We see the biggest performance boost with orientation culling.
 
 ![pic2](img/FPS_vs_Culling.png)
 
