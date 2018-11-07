@@ -56,7 +56,7 @@ Without physics calculations in the compute shader, grass is rendered as straigh
 
 ### Simulating Forces in Compute Shader
 
-* Gravity
+#### Gravity
 
 Gravity is added in the usual way: `gE = vec3(0, -9.8, 0)`
 
@@ -65,7 +65,7 @@ as a term called the "front gravity". Front gravity is computed as `gF = (1/4) *
 
 The total gravity on the grass blade is `g = gE + gF`.
 
-* Recovery
+#### Recovery
 
 Recovery corresponds to the counter-force that brings our grass blade back into equilibrium. This is derived in the paper using Hooke's law.
 
@@ -74,19 +74,21 @@ simulation started, `iv2`. At the beginning of our simulation, `v1` and `v2` are
 
 Once we have `iv2`, we can compute the recovery forces as `r = (iv2 - v2) * stiffness`.
 
-* Wind
+#### Wind
 
 Wind is calculated as `vec(v_x, 0, v_z) * sin(time)` (a sinusoidal force along a particular wind direction).
 
-* Total Force
+#### Total Force
 
 Total force is calculated as `tF = (gravity + recovery + wind) * deltaTime`. 
 
-* Positional Corrections
+#### Positional Corrections
 
 I followed section 5.2 of the paper referenced to determine the corrected final positions for `v1` and `v2` (these corrections ensure that grass doesn't pass below ground plane and maintains a proper length).
 
-### Culling tests
+![](img/grass_forces.gif)
+
+### Culling Tests
 
 * Orientation: Blades whose normals are perpendicular to the look vector are culled. We can't see these!
 * Frustum: Blades that are outside the viewing frustum are culled.
@@ -95,10 +97,13 @@ I followed section 5.2 of the paper referenced to determine the corrected final 
 Performance
 ------------
 
-## FPS Performance as a function of number of grass blades
+#### FPS Performance as a function of number of grass blades
 
+![pic1](img/FPS_vs_Grass.png)
 
-## FPS Performance improvements using culling
+#### FPS Performance improvements using culling
+
+![pic2](img/FPS_vs_Culling.png)
 
 Links
 ------------
