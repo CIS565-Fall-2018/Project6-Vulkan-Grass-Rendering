@@ -56,8 +56,16 @@ private:
     VkDescriptorSetLayout cameraDescriptorSetLayout;
     VkDescriptorSetLayout modelDescriptorSetLayout;
     VkDescriptorSetLayout timeDescriptorSetLayout;
+	// add compute descriptor set layout
+	VkDescriptorSetLayout computeDescriptorSetLayout;
+
     
     VkDescriptorPool descriptorPool;
+
+	// add grass and compute descriptor sets
+	std::vector <VkDescriptorSet> grassDescriptorSets;
+	std::vector<VkDescriptorSet> computeDescriptorSets;
+
 
     VkDescriptorSet cameraDescriptorSet;
     std::vector<VkDescriptorSet> modelDescriptorSets;
@@ -79,4 +87,6 @@ private:
 
     std::vector<VkCommandBuffer> commandBuffers;
     VkCommandBuffer computeCommandBuffer;
+
+
 };
