@@ -56,6 +56,7 @@ private:
     VkDescriptorSetLayout cameraDescriptorSetLayout;
     VkDescriptorSetLayout modelDescriptorSetLayout;
     VkDescriptorSetLayout timeDescriptorSetLayout;
+	VkDescriptorSetLayout bladesDescriptorSetLayout;
     
     VkDescriptorPool descriptorPool;
 
