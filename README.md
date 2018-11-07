@@ -99,8 +99,11 @@ Performance
 
 #### FPS Performance as a function of number of grass blades
 
+![pic1](img/FPS_vs_Grass.png)
 
 #### FPS Performance improvements using culling
+
+![pic2](img/FPS_vs_Culling.png)
 
 Links
 ------------
