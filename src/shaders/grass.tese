@@ -17,6 +17,7 @@ layout(location = 3)in vec4 up[];
 
 layout(location = 0)out vec4 pos;
 layout(location = 1)out vec3 nor;
+layout(location = 2)out float fs_v;
 
 
 void main() {
@@ -39,5 +40,6 @@ void main() {
 	vec3 p = (1 - t) * c0 + t * c1;
 	pos = vec4(p, 1);
 	gl_Position = camera.proj * camera.view * pos;
-	
+	fs_v = v;
+
 }

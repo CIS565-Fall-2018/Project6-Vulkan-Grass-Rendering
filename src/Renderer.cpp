@@ -452,22 +452,30 @@ void Renderer::CreateComputeDescriptorSets() {
 
 	for (uint32_t i = 0; i < scene->GetBlades().size(); ++i)
 	{
-		VkDescriptorBufferInfo numBladesBufferInfo = {};
-		numBladesBufferInfo.buffer = scene->GetBlades()[i]->GetNumBladesBuffer();
-		numBladesBufferInfo.offset = 0;
-		numBladesBufferInfo.range = sizeof(BladeDrawIndirect);
-		
-		// todo  now update culled!
-		VkDescriptorBufferInfo culledBladeBufferInfo = {};
-		culledBladeBufferInfo.buffer = scene->GetBlades()[i]->GetCulledBladesBuffer();
-		culledBladeBufferInfo.offset = 0;
-		culledBladeBufferInfo.range = sizeof(Blade);
 
 		//input
 		VkDescriptorBufferInfo inputBladeBufferInfo = {};
 		inputBladeBufferInfo.buffer = scene->GetBlades()[i]->GetBladesBuffer();
 		inputBladeBufferInfo.offset = 0;
-		inputBladeBufferInfo.range = sizeof(Blade);
+		inputBladeBufferInfo.range = NUM_BLADES * sizeof(Blade);
+		//inputBladeBufferInfo.range =  sizeof(Blade);
+
+
+		
+		// todo  now update culled!
+		VkDescriptorBufferInfo culledBladeBufferInfo = {};
+		culledBladeBufferInfo.buffer = scene->GetBlades()[i]->GetCulledBladesBuffer();
+		culledBladeBufferInfo.offset = 0;
+		culledBladeBufferInfo.range = NUM_BLADES * sizeof(Blade);
+		//culledBladeBufferInfo.range =  sizeof(Blade);
+
+
+
+		VkDescriptorBufferInfo numBladesBufferInfo = {};
+		numBladesBufferInfo.buffer = scene->GetBlades()[i]->GetNumBladesBuffer();
+		numBladesBufferInfo.offset = 0;
+		numBladesBufferInfo.range = sizeof(BladeDrawIndirect);
+
 
 		// offset = 0
 		descriptorWrites[3 * i + 0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
