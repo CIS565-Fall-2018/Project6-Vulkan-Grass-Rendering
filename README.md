@@ -62,7 +62,7 @@ When looking from very close distance, the grass blades outside the camera frust
 ### detail
 
 When looking from very far distance, the density of the grass doesn't need to be too high because we can hardly tell the difference and also because we want to avoid aliasing caused by a lot of small objects at far distance. The way I do this is to use the distance from the grass blade to the camera as a why to decide what LOD level they should be. Assuming the maximum LOD is n, in LOD m, we want to cull m grass blades out of every n grass blades. This is achieved by take adding the grass index in to the mix. When int(bladeId) % n < int(n * (dproj / dfar)), the grass is culled. dproj is the vector projected by the viewing direction on to the grass plane so that the distance culling is independent to the vertical viewing angle(same reason as orientation culling). dfar is the distance of LOD n. The paper [Responsive Real-Time Grass Rendering for General 3D Scenes
-](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf) used a different description and a different formula which I think is a mistake in editing.
+](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf) used a different formula which I think is a mistake in editing.
 
 ---
 
