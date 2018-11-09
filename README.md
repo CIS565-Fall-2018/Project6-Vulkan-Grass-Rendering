@@ -29,6 +29,36 @@ Analysis
 
 ---
 
+## I. Orientation Culling
+
+### overview
+
+![](o_culling.JPG)
+
+### detail
+
+---
+
+## II. Frustum Culling
+
+### overview
+
+![](f_culling.JPG)
+
+### detail
+
+---
+
+## III. Distance Culling
+
+### overview
+
+![](d_culling.JPG)
+
+### detail
+
+---
+
 ## 1. 8192 (2^13) grass blades
 
 ### overview
