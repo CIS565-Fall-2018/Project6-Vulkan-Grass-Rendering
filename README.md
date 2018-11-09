@@ -11,9 +11,8 @@ Vulkan-Grass-Rendering
 * Tested on: Windows 10, Intel(R) Core(TM) i7-6700HQ CPU@2.60GHz, 16GB, GTX960M(Private Computer)
 
 ### Final Render
-<p align="middle">
-<img src="img.all.gif" width = "640" />
-</p>
+![](img/all.gif)
+
 
 
 ### Features
