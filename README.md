@@ -33,9 +33,11 @@ Analysis
 
 ### overview
 
-![](o_culling.JPG)
+![](img/o_culling.JPG)
 
 ### detail
+
+When looking from left or right side of the grass blade, the blade will take less screen pixels almost like a line segment. It is better not to show it because it's not going to make too much difference and also because we want to avoid aliasing caused by the "line segment". The eaisist way to do this is to test the angle between the direction from the grass blade to the camera and the front direction of the grass blade. In practice, I use the dot product to achieve this. If the absolute value of the dot product is smaller than the aforementioned threshold 0.2, then the grass blade is culled. Usually this will do in simple cases but when camera goes over the head and facing downwards to the grass plane, all the grass blades will be culled since the front direction of them are all perpendicular to the viewing direction. To solve this problem, one can use the vector projected by the viewing direction on to the grass plane instead.
 
 ---
 
@@ -43,9 +45,11 @@ Analysis
 
 ### overview
 
-![](f_culling.JPG)
+![](img/f_culling.JPG)
 
 ### detail
+
+When looking from very close distance, the grass blades outside the camera frustum will now be rendered. To boost performance, we can cull these grass blades in advance. The way I used is transfering the 3 control points of the bezier curve of each grass blade in to culling space, and perform a general frustum culling by checking x, y, z agianst w component. If they are not within the range [w, -w] (assuming w is negative), they are culled.
 
 ---
 
@@ -53,9 +57,12 @@ Analysis
 
 ### overview
 
-![](d_culling.JPG)
+![](img/d_culling.JPG)
 
 ### detail
+
+When looking from very far distance, the density of the grass doesn't need to be too high because we can hardly tell the difference and also because we want to avoid aliasing caused by a lot of small objects at far distance. The way I do this is to use the distance from the grass blade to the camera as a why to decide what LOD level they should be. Assuming the maximum LOD is n, in LOD m, we want to cull m grass blades out of every n grass blades. This is achieved by take adding the grass index in to the mix. When int(bladeId) % n < int(n * (dproj / dfar)), the grass is culled. dproj is the vector projected by the viewing direction on to the grass plane so that the distance culling is independent to the vertical viewing angle(same reason as orientation culling). dfar is the distance of LOD n. The paper [Responsive Real-Time Grass Rendering for General 3D Scenes
+](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf) used a different description and a different formula which I think is a mistake in editing.
 
 ---
 
