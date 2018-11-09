@@ -19,8 +19,8 @@ void main() {
     // TODO: Compute fragment color
 	vec3 lightDir = normalize(vec3(1, 1, 1));
 
-	vec3 bottom = vec3(0.12, 0.43, 0.05);
-	vec3 top = vec3(0.4, 0.86, 0.57);
+	vec3 top = vec3(0.0, 1.0, 0.0);
+	vec3 bottom = vec3(0.1, 0.2, 0.1);
 	outColor = vec4(mix(bottom, top, clamp(fs_v, 0.0, 1.0)), 1);
 
     // outColor = vec4(0.2, 0.7, 0.2, 1.0);

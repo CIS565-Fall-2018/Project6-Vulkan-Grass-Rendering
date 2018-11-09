@@ -29,12 +29,7 @@ struct Blade {
 // The project is using vkCmdDrawIndirect to use a buffer as the arguments for a draw call
 // This is sort of an advanced feature so we've showed you what this buffer should look like
 //
-// layout(set = ???, binding = ???) buffer NumBlades {
-// 	  uint vertexCount;   // Write the number of blades remaining here
-// 	  uint instanceCount; // = 1
-// 	  uint firstVertex;   // = 0
-// 	  uint firstInstance; // = 0
-// } numBlades;
+
 
 
 layout(set = 2, binding = 0) buffer InputBlades{
@@ -99,7 +94,8 @@ void main() {
 	float wMag = 5 * cos(2 * totalTime) * abs(dot(tangent, wDir));
 	vec3 wind = wMag * wDir;
 
-	v2 += (gravity + recovery + wind) * deltaTime;
+	 v2 += (gravity + recovery + wind) * deltaTime;
+	//v2 += vec4(1.0, 0.0, 0.0, 0.0)
 
 	// grass above ground;
 	v2 = v2 - up * min(dot(up, v2 - v0), 0);
