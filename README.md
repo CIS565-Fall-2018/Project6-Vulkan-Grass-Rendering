@@ -14,8 +14,24 @@ Vulkan-Grass-Rendering
 ![](img/all.gif)
 
 
+### Introduction
 
-### Features
+This project is an implementation of [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf). Grass blades are efficiently generated and rendered by modeling them as quadratic bezier curves. The twist: utilizing the GPU with Vulkan. Using Vulkan to parallelize rendering and force computations allows for up to 2^20 individual grass blades to be displayed with a decent framerate. A more in depth performance analysis is at the bottom of the page.  
+
+Here is an overview of the graphics pipeline:  
+  * Compute shader - Calculates gravity, recovery, and wind forces. Performs orientation, frustum, and distance culling.  
+  * Vertex shader - Simplay passes data along as is.  
+  * Tessellation Control shader - Provides subdivision parameters  
+  * Tessellation Evaluation shader - Adds new vertices by subdiving, turning a bezier curve into a 2D surface. Moves the vertices so they follow the bezier curve.  
+  * Fragment shader - Colors the fragments. 
+  
+#### Grass Geometry
+
+Each blade of grass is represented as a quadratic bezier curve. It has three control points: v0, v1, and v2. v0 is the base of the grass on the ground. v1 is a control point that determines the curve, but is not used for rendering. v2 is the tip of the grass.  
+![](img/blade_model.jpg)  
+An image from the paper showing the bezier curve control points of a blade of grass.  
+
+#### Features
 
 * Compute shader
   * Add forces: gravity, recovery and wind
@@ -38,6 +54,7 @@ Orientation Culling | View-frustum Culling | Distance Culling
   <img src="img/chart.png" width="800" />
 </p>
 
+* The above chart shows how the average Fps changes with increasing grass blades. When the number of grass blades reaches 2^25, the computer crashes. And the Fps decreaes when the number of grass blades increases.
 
 ## Resources
 
