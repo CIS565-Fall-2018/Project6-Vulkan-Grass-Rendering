@@ -3,7 +3,7 @@ Vulkan-Grass-Rendering
 
 [CLICK ME FOR INSTRUCTION OF THIS PROJECT](./INSTRUCTION.md)
 
-**University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 4**
+**University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 6**
 
 
 * Xinyu Lin
@@ -27,7 +27,7 @@ Vulkan-Grass-Rendering
   * Tessellation evaluation shader: performing interpolation along Bezier Curves
   * Fragment shader: final shading
   
-  #### Culling
+#### Culling
 
 Orientation Culling | View-frustum Culling | Distance Culling
 :--:|:--:|:--:
