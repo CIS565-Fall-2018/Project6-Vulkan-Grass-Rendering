@@ -5,6 +5,7 @@
 #include "Model.h"
 
 constexpr static unsigned int NUM_BLADES = 1 << 13;
+static constexpr unsigned int BUCKET_COUNT = 50;//not used
 constexpr static float MIN_HEIGHT = 1.3f;
 constexpr static float MAX_HEIGHT = 2.5f;
 constexpr static float MIN_WIDTH = 0.1f;
@@ -74,15 +75,18 @@ private:
     VkBuffer bladesBuffer;
     VkBuffer culledBladesBuffer;
     VkBuffer numBladesBuffer;
+	VkBuffer bucketBladeCounts;
 
     VkDeviceMemory bladesBufferMemory;
     VkDeviceMemory culledBladesBufferMemory;
     VkDeviceMemory numBladesBufferMemory;
+	VkDeviceMemory bucketBladeCountsMemory;
 
 public:
     Blades(Device* device, VkCommandPool commandPool, float planeDim);
     VkBuffer GetBladesBuffer() const;
     VkBuffer GetCulledBladesBuffer() const;
     VkBuffer GetNumBladesBuffer() const;
+	VkBuffer GetBucketBladeCounts() const;
     ~Blades();
 };

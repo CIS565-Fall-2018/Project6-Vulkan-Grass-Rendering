@@ -41,6 +41,39 @@ void Camera::UpdateOrbit(float deltaX, float deltaY, float deltaZ) {
     memcpy(mappedData, &cameraBufferObject, sizeof(CameraBufferObject));
 }
 
+void Camera::SetOrientationCullingEnabled(float mode)
+{
+	cameraBufferObject.orientationCullingEnabled = mode;
+	memcpy(mappedData, &cameraBufferObject, sizeof(CameraBufferObject));
+}
+
+void Camera::SetFrustumCullingEnabled(float mode)
+{
+	cameraBufferObject.frustumCullingEnabled = mode;
+	memcpy(mappedData, &cameraBufferObject, sizeof(CameraBufferObject));
+}
+
+void Camera::SetDistanceCullingEnabled(float mode)
+{
+	cameraBufferObject.distanceCullingEnabled = mode;
+	memcpy(mappedData, &cameraBufferObject, sizeof(CameraBufferObject));
+}
+
+float Camera::IsOrientationCullingEnabled()
+{
+	return cameraBufferObject.orientationCullingEnabled;
+}
+
+float Camera::IsFrustumCullingEnabled()
+{
+	return cameraBufferObject.frustumCullingEnabled;
+}
+
+float Camera::IsDistanceCullingEnabled()
+{
+	return cameraBufferObject.distanceCullingEnabled;
+}
+
 Camera::~Camera() {
   vkUnmapMemory(device->GetVkDevice(), bufferMemory);
   vkDestroyBuffer(device->GetVkDevice(), buffer, nullptr);
