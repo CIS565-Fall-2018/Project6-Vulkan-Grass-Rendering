@@ -1,0 +1,41 @@
+Notes on the writeup (and I guess also the paper):
+
+So basically we're doing two things. We render the grass and we also build a simulator for having wind forces on the grass.
+
+The rendering is made in tesselation shaders (etc.) and the physics simulation happens in the compute shaders
+
+The files are like:
+shaders/compute.comp -- computes the physics calculations of wind on the bezier curve
+shaders/grass.vert -- computes the transform (?)
+shaders/grass.tesc -- controls the tessellation of the grass
+shaders/grass.tese -- evaluates the tessellation of the grass (i.e going from a single bezier curve to an actual set of vertices)
+
+Bezier Curve Representation: 
+
+We will basically be storing three vertices (vec3) one up vector (vec3) then 4 parameters (orientation, height, width and stiffness).
+We can pack them together so that's only 4 vec4s when passing through vertex shader
+v0.w = orientation,
+v1.w = height,
+v2.w = width,
+up.w = stiffness
+
+We simulate the forces given the bezier curve input -- we really only apply forces to v2 and then use v1 to maintain the appropriate height/length of blade
+v0 is our base ground position so that's not going to change with something like wind.
+
+We are in charge of maintaining the storage and uploading of all the grass data :( so we gotta make a buffer.
+The buffer should include: -- amount of time passed in simulation
+						   -- amount of time since last frame (in order to do both they say to extend/create descriptor sets
+																that will be bound to the compute pipeline, but what the hell does that mean)
+
+Okay so the forces that we have to implement in the compute shader are threefold:
+
+Gravity, Recovery, and WIND
+
+Gravity -- Given a gravity vector D (direction xyz magnitude w):  gE = normalize(D.xyz) * D.w
+	- then we compute the "Front gravity" (f=front facing direction of the blade): gF = (1/4) * ||gE|| * f
+	- g = gE + gF
+
+Recovery -- Basically we gotta find the initial value of v1/v2 (let that be iv2). (probably just going to walk along the up vector by height of blade) from v0.
+			- Once we have iv2, then we're golden: r = (iv2 - v2) * stiffness
+
+Wind -- Try to do some sine or cosine function (maybe one that depends on the position v0 & changes with time)
