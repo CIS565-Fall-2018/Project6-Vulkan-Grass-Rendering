@@ -39,3 +39,73 @@ Recovery -- Basically we gotta find the initial value of v1/v2 (let that be iv2)
 			- Once we have iv2, then we're golden: r = (iv2 - v2) * stiffness
 
 Wind -- Try to do some sine or cosine function (maybe one that depends on the position v0 & changes with time)
+
+---------------------------
+Total TODOs in the codebase:
+Renderer.cpp - 
+198 TODO: Create the descriptor set layout for the compute pipeline
+    // Remember this is like a class definition stating why types of information
+    // will be stored at each binding
+218 // TODO: Add any additional types and counts of descriptors you will need to allocate
+320  // TODO: Create Descriptor sets for the grass.
+    // This should involve creating descriptor sets which point to the model matrix of each group of grass blades
+360 // TODO: Create Descriptor sets for the compute pipeline
+    // The descriptors should point to Storage buffers which will hold the grass blades, the culled grass blades, and the output number of grass blades 
+719 // TODO: Add the compute dsecriptor set layout you create to this list
+886 // TODO: For each group of blades bind its descriptor set and dispatch
+978 // TODO: Uncomment this when the buffers are populated
+    // vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+
+    // TODO: Bind the descriptor set for each grass blades model
+
+    // Draw
+    // TODO: Uncomment this when the buffers are populated
+    // vkCmdDrawIndirect(commandBuffers[i], scene->GetBlades()[j]->GetNumBladesBuffer(), 0, 1, sizeof(BladeDrawIndirect));
+1044 // TODO: destroy any resources you created
+
+compute.comp -
+24  // TODO: Add bindings to:
+	// 1. Store the input blades
+	// 2. Write out the culled blades
+	// 3. Write the total number of blades remaining
+
+	// The project is using vkCmdDrawIndirect to use a buffer as the arguments for a draw call
+	// This is sort of an advanced feature so we've showed you what this buffer should look like
+	//
+	// layout(set = ???, binding = ???) buffer NumBlades {
+	// 	  uint vertexCount;   // Write the number of blades remaining here
+	// 	  uint instanceCount; // = 1
+	// 	  uint firstVertex;   // = 0
+	// 	  uint firstInstance; // = 0
+	// } numBlades;
+
+50 // TODO: Apply forces on every blade and update the vertices in the buffer
+
+	// TODO: Cull blades that are too far away or not in the camera frustum and write them
+	// to the culled blades buffer
+	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
+	// You want to write the visible blades to the buffer without write conflicts between threads
+
+grass.frag -
+9 // TODO: Declare fragment shader inputs
+14 // TODO: Compute fragment color
+
+grass.tesc - 
+11 // TODO: Declare tessellation control shader inputs and outputs
+17 // TODO: Write any shader outputs
+
+	// TODO: Set level of tesselation
+    // gl_TessLevelInner[0] = ???
+    // gl_TessLevelInner[1] = ???
+    // gl_TessLevelOuter[0] = ???
+    // gl_TessLevelOuter[1] = ???
+    // gl_TessLevelOuter[2] = ???
+    // gl_TessLevelOuter[3] = ???
+
+grass.tese -
+11 // TODO: Declare tessellation evaluation shader inputs and outputs
+17 // TODO: Use u and v to parameterize along the grass blade and output positions for each vertex of the grass blade
+
+grass.vert -
+9 // TODO: Declare vertex shader inputs and outputs
+16 // TODO: Write gl_Position and any other shader outputs
