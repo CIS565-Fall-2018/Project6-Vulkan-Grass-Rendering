@@ -30,7 +30,7 @@ layout(set = 2, binding = 0) buffer Blades {
 	Blade data[];
 } bladeData;
 
-layout(set = 3, binding = 0) buffer CulledBlades {
+layout(set = 2, binding = 1) buffer CulledBlades {
 	Blade data[];
 } culledBladeData;
 
@@ -38,7 +38,7 @@ layout(set = 3, binding = 0) buffer CulledBlades {
 // This is sort of an advanced feature so we've showed you what this buffer should look like
 //
 
-layout(set = 4, binding = 0) buffer NumBlades {
+layout(set = 2, binding = 2) buffer NumBlades {
 	  uint vertexCount;   // Write the number of blades remaining here
  	  uint instanceCount; // = 1
  	  uint firstVertex;   // = 0
