@@ -15,5 +15,7 @@ void main() {
     float v = gl_TessCoord.y;
 
 	// TODO: Use u and v to parameterize along the grass blade and output positions for each vertex of the grass blade
-
+	vec4 p1 = mix(gl_in[1].gl_Position, gl_in[0].gl_Position, u);
+	vec4 p2 = mix(gl_in[2].gl_Position,gl_in[3].gl_Position, u);
+    gl_Position = mix(p1, p2, v);
 }

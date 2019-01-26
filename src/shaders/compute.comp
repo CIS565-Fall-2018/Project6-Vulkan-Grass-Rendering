@@ -60,7 +60,8 @@ void main() {
 
 	// Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
-	atomicExchange(culledBladeData.data[gl_GlobalInvocationID.x], bladeData.data[gl_GlobalInvocationID.x]);
+	culledBladeData.data[gl_GlobalInvocationID.x] = bladeData.data[gl_GlobalInvocationID.x];
+
 	atomicAdd(numBlades.vertexCount, 1);
 
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount

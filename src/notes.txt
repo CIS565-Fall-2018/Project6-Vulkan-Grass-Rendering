@@ -109,3 +109,42 @@ grass.tese -
 grass.vert -
 9 // TODO: Declare vertex shader inputs and outputs
 16 // TODO: Write gl_Position and any other shader outputs
+
+So in order to allocate the grass descriptor set we need::
+vkDescriptorSetLayout
+vkDescriptorSetAllovateInfo
+
+then call vkAllocateDescriptorSets
+
+VkDescriptorBufferInfo
+
+// Structure specifying descriptor buffer info
+		typedef struct VkDescriptorBufferInfo {
+			VkBuffer        buffer;
+			VkDeviceSize    offset;
+			VkDeviceSize    range;
+		} VkDescriptorBufferInfo;
+
+std::array<VkWriteDescriptorSet, 1>
+
+//Structure specifying the parameters of a descriptor set write operation
+			typedef struct VkWriteDescriptorSet {
+				VkStructureType                  sType;
+				const void*                      pNext;
+				VkDescriptorSet                  dstSet;
+				uint32_t                         dstBinding;
+				uint32_t                         dstArrayElement;
+				uint32_t                         descriptorCount;
+				VkDescriptorType                 descriptorType;
+				const VkDescriptorImageInfo*     pImageInfo;
+				const VkDescriptorBufferInfo*    pBufferInfo;
+				const VkBufferView*              pTexelBufferView;
+			} VkWriteDescriptorSet;
+
+then call vkUpdateDescriptorSets
+Update the contents of a descriptor set object
+    VkDevice                                    device,
+    uint32_t                                    descriptorWriteCount,
+    const VkWriteDescriptorSet*                 pDescriptorWrites,
+    uint32_t                                    descriptorCopyCount,
+    const VkCopyDescriptorSet*                  pDescriptorCopies); ~ null

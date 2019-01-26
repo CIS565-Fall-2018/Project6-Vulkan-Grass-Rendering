@@ -9,16 +9,16 @@ layout(set = 0, binding = 0) uniform CameraBufferObject {
 } camera;
 
 // TODO: Declare tessellation control shader inputs and outputs
-layout(location = 0) in vec4 v1;
-layout(location = 1) in vec4 v2;
-layout(location = 2) in vec4 v3;
+//layout(location = 0) in vec4 v1;
+//layout(location = 1) in vec4 v2;
+//layout(location = 2) in vec4 v3;
 
 void main() {
 	// Don't move the origin location of the patch
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 
 	// TODO: Write any shader outputs
-	gl_Position = camera.view * camera.proj * out;
+	//gl_Position = camera.view * camera.proj * out;
 
 	// TODO: Set level of tesselation
     gl_TessLevelInner[0] = 7.0;

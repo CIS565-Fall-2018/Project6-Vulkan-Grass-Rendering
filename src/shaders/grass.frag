@@ -13,5 +13,6 @@ layout(location = 0) out vec4 outColor;
 void main() {
     // TODO: Compute fragment color with like some sort of lambert or something
 
-    outColor = vec4(1.0);
+
+    outColor = vec4(0.0, 1.0, 1.0, 1.0);
 }
