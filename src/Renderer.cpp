@@ -464,16 +464,16 @@ void Renderer::CreateComputeDescriptorSets() {
 		VkDescriptorBufferInfo computeBladeBufferInfo = {};
 		computeBladeBufferInfo.buffer = scene->GetBlades()[i]->GetBladesBuffer();
 		computeBladeBufferInfo.offset = 0;
-		computeBladeBufferInfo.range = NUM_BLADES * sizeof(Blade);
+		computeBladeBufferInfo.range = VK_WHOLE_SIZE;
 
 		VkDescriptorBufferInfo computeCulledBladeBufferInfo = {};
 		computeCulledBladeBufferInfo.buffer = scene->GetBlades()[i]->GetCulledBladesBuffer();
-		computeCulledBladeBufferInfo.offset = 0;
-		computeCulledBladeBufferInfo.range = NUM_BLADES * sizeof(Blade);
+		computeCulledBladeBufferInfo.offset = NUM_BLADES * sizeof(Blade);
+		computeCulledBladeBufferInfo.range = VK_WHOLE_SIZE;
 
 		VkDescriptorBufferInfo computeNumBladeBufferInfo = {};
 		computeNumBladeBufferInfo.buffer = scene->GetBlades()[i]->GetNumBladesBuffer();
-		computeNumBladeBufferInfo.offset = 0;
+		computeNumBladeBufferInfo.offset = NUM_BLADES * sizeof(Blade) * 2.0;
 		computeNumBladeBufferInfo.range = sizeof(BladeDrawIndirect);
 
 		VkDescriptorBufferInfo bufferInfos[3] = { computeBladeBufferInfo, computeCulledBladeBufferInfo, computeNumBladeBufferInfo };
@@ -1021,7 +1021,7 @@ void Renderer::RecordComputeCommandBuffer() {
 		vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 2, 1, &computeDescriptorSets[j], 0, nullptr);
 	}
 
-	vkCmdDispatch(computeCommandBuffer, 32, 1, 1);
+	vkCmdDispatch(computeCommandBuffer, NUM_BLADES, 1, 1);
 
     // ~ End recording ~
     if (vkEndCommandBuffer(computeCommandBuffer) != VK_SUCCESS) {
