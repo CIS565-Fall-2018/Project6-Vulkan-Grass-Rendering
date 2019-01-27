@@ -31,8 +31,8 @@ Renderer::Renderer(Device* device, SwapChain* swapChain, Scene* scene, Camera* c
     CreateGraphicsPipeline();
     CreateGrassPipeline();
     CreateComputePipeline();
+	RecordComputeCommandBuffer();
     RecordCommandBuffers();
-    RecordComputeCommandBuffer();
 }
 
 void Renderer::CreateCommandPools() {
@@ -1021,7 +1021,7 @@ void Renderer::RecordComputeCommandBuffer() {
 		vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 2, 1, &computeDescriptorSets[j], 0, nullptr);
 	}
 
-	vkCmdDispatch(computeCommandBuffer, NUM_BLADES, 1, 1);
+	vkCmdDispatch(computeCommandBuffer, 32, 1, 1);
 
     // ~ End recording ~
     if (vkEndCommandBuffer(computeCommandBuffer) != VK_SUCCESS) {

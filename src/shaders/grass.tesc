@@ -19,7 +19,7 @@ layout(location = 2) out vec4 v3_ES_in[];
 
 void main() {
 	// Don't move the origin location of the patch
-    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+    gl_out[gl_InvocationID].gl_Position = gl_in[0].gl_Position;
 
 	// TODO: Write any shader outputs
 	v1_ES_in[gl_InvocationID] = outv1[gl_InvocationID];
@@ -29,10 +29,10 @@ void main() {
 	//gl_Position = camera.view * camera.proj * out;
 
 	// TODO: Set level of tesselation
-    gl_TessLevelInner[0] = 7.0;
+    gl_TessLevelInner[0] = 2.0;
     gl_TessLevelInner[1] = 2.0;
     gl_TessLevelOuter[0] = 2.0;
-    gl_TessLevelOuter[1] = 3.0;
-    gl_TessLevelOuter[2] = 7.0;
+    gl_TessLevelOuter[1] = 2.0;
+    gl_TessLevelOuter[2] = 2.0;
     gl_TessLevelOuter[3] = 2.0;
 }

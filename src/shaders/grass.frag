@@ -7,11 +7,12 @@ layout(set = 0, binding = 0) uniform CameraBufferObject {
 } camera;
 
 // TODO: Declare fragment shader inputs
+layout(location = 0) in vec4 debug_col_out;
 
 layout(location = 0) out vec4 outColor;
 
 void main() {
     // TODO: Compute fragment color with like some sort of lambert or something
 
-    outColor = vec4(0.0, 1.0, 1.0, 1.0);
+    outColor = debug_col_out;
 }
