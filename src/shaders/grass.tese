@@ -52,10 +52,9 @@ void main() {
 	float t = u - (u * v * v);
 
 	// calculate lambertian shading term to pass to frag shader
-	vec4 posWorld = vec4(mix(c0, c1, t), 1.0);
-	vec4 lightPos = vec4(1.0, 1.0, 1.0, 1.0);
+	vec4 posView = camera.view * vec4(mix(c0, c1, t), 1.0);
 
-	lightIntensity[0] = dot(normalize(lightPos - posWorld), normalize(vec4(n, 0.0)));
+	lightIntensity[0] = abs(dot(normalize(posView), normalize(camera.view * vec4(n, 0.0))));
 
-	gl_Position = camera.proj * camera.view * vec4(mix(c0, c1, t), 1.0);
+	gl_Position = camera.proj * posView;
 }

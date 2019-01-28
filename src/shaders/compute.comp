@@ -3,7 +3,9 @@
 
 #define WORKGROUP_SIZE 32
 #define GRAVITY_ACCEL 5
-#define WIND_AMPLITUDE 20
+#define WIND_AMPLITUDE 10
+
+#define ORIENTATION_TOLERANCE 0.8
 
 layout(local_size_x = WORKGROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
 
@@ -68,7 +70,7 @@ void main() {
 	float width = b.v2.w;
 	float stiffness = b.up.w;
 
-	// Extract the balde vertices
+	// Extract the blade vertices
 	vec3 v0 = b.v0.xyz;
 	vec3 v1 = b.v1.xyz;
 	vec3 v2 = b.v2.xyz;
@@ -91,7 +93,7 @@ void main() {
 
 	// Calculate Wind Influence (we're doing a simple ripple here)
 	float windStrength = WIND_AMPLITUDE * sin(v0.x + v0.z + totalTime);
-	vec3 windVector = windStrength * normalize(v0);
+	vec3 windVector = abs(windStrength) * vec3(-1.0, 0.0, 0.0);
 
 	// now get the directional alignment and the height ratio
 	float directionalAlignment = 1 - abs(dot((windVector) / length(windVector), (v2 - v0) / length(v2 - v0)));
@@ -121,15 +123,22 @@ void main() {
 	vec3 v1corr = v0 + ratio * (newv1 - v0);
 	vec3 v2corr = v1corr + ratio * (newv2 - newv1);
 
-	// Cull blades that are too far away or not in the camera frustum and write them
-	// to the culled blades buffer
+	// Update the blades with their new v1 and v2 position
+    bladeData.data[gl_GlobalInvocationID.x].v1 = vec4(v1corr, height);
+	bladeData.data[gl_GlobalInvocationID.x].v2 = vec4(v2corr, width);
 
-    bladeData.data[gl_GlobalInvocationID.x].v1 = vec4(newv1, height);
-	bladeData.data[gl_GlobalInvocationID.x].v2 = vec4(newv2, width);
-	culledBladeData.data[gl_GlobalInvocationID.x].v1 = vec4(newv1, height);
-	culledBladeData.data[gl_GlobalInvocationID.x].v2 = vec4(newv2, width);
+	// Perform orientation cull test
+	bool isFacingCamera = abs(dot(camera.view * vec4(cross(up, front), 0.0), vec4(0.0, 0.0, -1.0, 0.0))) > ORIENTATION_TOLERANCE;
 
-	atomicAdd(numBlades.vertexCount, 1);
+	// Perform View-Frustum Culling
+	if (isFacingCamera) {
+		uint count = atomicAdd(numBlades.vertexCount, 1);
+		barrier();
+		culledBladeData.data[count].v0 = vec4(v0, orientation);
+		culledBladeData.data[count].v1 = vec4(v1corr, height);
+		culledBladeData.data[count].v2 = vec4(v2corr, width);
+		culledBladeData.data[count].up = vec4(up, stiffness);
+	}
 
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads

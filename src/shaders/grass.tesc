@@ -31,8 +31,8 @@ void main() {
 	// TODO: Set level of tesselation
     gl_TessLevelInner[0] = 2.0;
     gl_TessLevelInner[1] = 2.0;
-    gl_TessLevelOuter[0] = 7.0;
-    gl_TessLevelOuter[1] = 7.0;
-    gl_TessLevelOuter[2] = 7.0;
-    gl_TessLevelOuter[3] = 7.0;
+    gl_TessLevelOuter[0] = 3.0;
+    gl_TessLevelOuter[1] = 3.0;
+    gl_TessLevelOuter[2] = 3.0;
+    gl_TessLevelOuter[3] = 3.0;
 }

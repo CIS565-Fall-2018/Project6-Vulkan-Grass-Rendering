@@ -1165,7 +1165,7 @@ void Renderer::RecordComputeCommandBuffer() {
 		vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 4, 1, &computeNumBladesDescriptorSets[j], 0, nullptr);
 	}
 
-	vkCmdDispatch(computeCommandBuffer, 32, 1, 1);
+	vkCmdDispatch(computeCommandBuffer, NUM_BLADES / WORKGROUP_SIZE, 1, 1);
 
     // ~ End recording ~
     if (vkEndCommandBuffer(computeCommandBuffer) != VK_SUCCESS) {
@@ -1286,8 +1286,7 @@ void Renderer::Frame() {
     computeSubmitInfo.commandBufferCount = 1;
     computeSubmitInfo.pCommandBuffers = &computeCommandBuffer;
 
-	VkResult kek = vkQueueSubmit(device->GetQueue(QueueFlags::Compute), 1, &computeSubmitInfo, VK_NULL_HANDLE);
-    if (kek != VK_SUCCESS) {
+    if (vkQueueSubmit(device->GetQueue(QueueFlags::Compute), 1, &computeSubmitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
         throw std::runtime_error("Failed to submit draw command buffer");
     }
 
