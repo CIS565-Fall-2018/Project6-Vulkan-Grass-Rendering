@@ -199,12 +199,7 @@ void Renderer::CreateTimeDescriptorSetLayout() {
 }
 
 void Renderer::CreateComputeBladesDescriptorSetLayout() {
-    // TODO: Create the descriptor set layout for the compute pipeline
-    // Remember this is like a class definition stating why types of information
-    // will be stored at each binding
-	// Describe the binding of the descriptor set layout
-
-	// this one is the buffer of input blade data
+	// input blade data
 	VkDescriptorSetLayoutBinding bladesLayoutBinding = {};
 	bladesLayoutBinding.binding = 0;
 	bladesLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -226,12 +221,7 @@ void Renderer::CreateComputeBladesDescriptorSetLayout() {
 }
 
 void Renderer::CreateComputeCulledBladesDescriptorSetLayout() {
-	// TODO: Create the descriptor set layout for the compute pipeline
-	// Remember this is like a class definition stating why types of information
-	// will be stored at each binding
-	// Describe the binding of the descriptor set layout
-
-	// this one is the buffer of input blade data
+	// culled blade data
 	VkDescriptorSetLayoutBinding culledBladesLayoutBinding = {};
 	culledBladesLayoutBinding.binding = 0;
 	culledBladesLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -253,12 +243,7 @@ void Renderer::CreateComputeCulledBladesDescriptorSetLayout() {
 }
 
 void Renderer::CreateComputeNumBladesDescriptorSetLayout() {
-	// TODO: Create the descriptor set layout for the compute pipeline
-	// Remember this is like a class definition stating why types of information
-	// will be stored at each binding
-	// Describe the binding of the descriptor set layout
-
-	// this one is the buffer of input blade data
+	// num blade data
 	VkDescriptorSetLayoutBinding numBladesLayoutBinding = {};
 	numBladesLayoutBinding.binding = 0;
 	numBladesLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -427,8 +412,7 @@ void Renderer::CreateGrassDescriptorSets() {
 		throw std::runtime_error("Failed to create descriptor set layout");
 	}
 
-    // TODO: Create Descriptor sets for the grass.
-    // This should involve creating descriptor sets which point to the model matrix of each group of grass blades
+    // Create Descriptor sets for the grass.
 	grassDescriptorSets.resize(scene->GetBlades().size());
 
 	// Describe the desciptor set
@@ -505,8 +489,7 @@ void Renderer::CreateTimeDescriptorSet() {
 }
 
 void Renderer::CreateComputeBladesDescriptorSets() {
-    // TODO: Create Descriptor sets for the compute pipeline
-    // The descriptors should point to Storage buffers which will hold the grass blades, the culled grass blades, and the output number of grass blades 
+    // Create the input blade Descriptor set for the compute pipeline
 	computeBladesDescriptorSets.resize(scene->GetBlades().size());
 
 	// Describe the desciptor set
@@ -549,8 +532,7 @@ void Renderer::CreateComputeBladesDescriptorSets() {
 }
 
 void Renderer::CreateComputeCulledBladesDescriptorSets() {
-	// TODO: Create Descriptor sets for the compute pipeline
-	// The descriptors should point to Storage buffers which will hold the grass blades, the culled grass blades, and the output number of grass blades 
+	// Create culled blade descriptor sets for the compute pipeline
 	computeCulledBladesDescriptorSets.resize(scene->GetBlades().size());
 
 	// Describe the desciptor set
@@ -593,8 +575,7 @@ void Renderer::CreateComputeCulledBladesDescriptorSets() {
 }
 
 void Renderer::CreateComputeNumBladesDescriptorSets() {
-	// TODO: Create Descriptor sets for the compute pipeline
-	// The descriptors should point to Storage buffers which will hold the grass blades, the culled grass blades, and the output number of grass blades 
+	// Create num blades descriptor sets for the compute pipeline
 	computeNumBladesDescriptorSets.resize(scene->GetBlades().size());
 
 	// Describe the desciptor set
@@ -989,7 +970,6 @@ void Renderer::CreateComputePipeline() {
     computeShaderStageInfo.module = computeShaderModule;
     computeShaderStageInfo.pName = "main";
 
-    // TODO: Add the compute dsecriptor set layout you create to this list
     std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { cameraDescriptorSetLayout, timeDescriptorSetLayout, computeBladesDescriptorSetLayout, computeCulledBladesDescriptorSetLayout, computeNumBladesDescriptorSetLayout };
 
     // Create pipeline layout
@@ -1156,7 +1136,7 @@ void Renderer::RecordComputeCommandBuffer() {
     // Bind descriptor set for time uniforms
     vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 1, 1, &timeDescriptorSet, 0, nullptr);
 
-    // TODO: For each group of bind its descriptor set and dispatch
+    // For each group of blades bind its descriptor set and dispatch
 	for (uint32_t j = 0; j < scene->GetBlades().size(); ++j) {
 
 		// Bind the descriptor set for each model
@@ -1257,14 +1237,13 @@ void Renderer::RecordCommandBuffers() {
         for (uint32_t j = 0; j < scene->GetBlades().size(); ++j) {
             VkBuffer vertexBuffers[] = { scene->GetBlades()[j]->GetCulledBladesBuffer() };
             VkDeviceSize offsets[] = { 0 };
-            // TODO: Uncomment this when the buffers are populated
+            // Populate Buffers
             vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-            // TODO: Bind the descriptor set for each grass blades model (debatably done)
+            // Bind the descriptor set for each grass blades model
 			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, grassPipelineLayout, 1, 1, &modelDescriptorSets[j], 0, nullptr);
 
             // Draw
-            // TODO: Uncomment this when the buffers are populated
             vkCmdDrawIndirect(commandBuffers[i], scene->GetBlades()[j]->GetNumBladesBuffer(), 0, 1, sizeof(BladeDrawIndirect));
         }
 
@@ -1323,8 +1302,6 @@ void Renderer::Frame() {
 
 Renderer::~Renderer() {
     vkDeviceWaitIdle(logicalDevice);
-
-    // TODO: destroy any resources you created (debatably done, will probably need more)
 
     vkFreeCommandBuffers(logicalDevice, graphicsCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
     vkFreeCommandBuffers(logicalDevice, computeCommandPool, 1, &computeCommandBuffer);

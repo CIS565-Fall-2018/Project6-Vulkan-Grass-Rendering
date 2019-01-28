@@ -8,13 +8,11 @@ layout(set = 0, binding = 0) uniform CameraBufferObject {
     mat4 proj;
 } camera;
 
-// TODO: Declare tessellation evaluation shader inputs and outputs
 layout(location = 0) in vec4 v1_ES_in[];
 layout(location = 1) in vec4 v2_ES_in[];
 layout(location = 2) in vec4 v3_ES_in[];
 
-layout(location = 0) out vec4 debug_col_out[];
-layout(location = 1) out float lightIntensity[];
+layout(location = 0) out float lightIntensity[];
 
 void main() {
     float u = gl_TessCoord.x;

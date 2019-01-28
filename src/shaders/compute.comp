@@ -6,6 +6,9 @@
 #define WIND_AMPLITUDE 10
 
 #define ORIENTATION_TOLERANCE 0.8
+#define VIEW_FRUSTUM_TOLERANCE 2.0
+#define MAX_DISTANCE 40.0
+#define NUM_BUCKETS 30
 
 layout(local_size_x = WORKGROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
 
@@ -26,11 +29,6 @@ struct Blade {
     vec4 up;
 };
 
-// TODO: Add bindings to:
-// 1. Store the input blades
-// 2. Write out the culled blades
-// 3. Write the total number of blades remaining
-
 layout(set = 2, binding = 0) buffer Blades {
 	Blade data[];
 } bladeData;
@@ -38,10 +36,6 @@ layout(set = 2, binding = 0) buffer Blades {
 layout(set = 3, binding = 0) buffer CulledBlades {
 	Blade data[];
 } culledBladeData;
-
-// The project is using vkCmdDrawIndirect to use a buffer as the arguments for a draw call
-// This is sort of an advanced feature so we've showed you what this buffer should look like
-//
 
 layout(set = 4, binding = 0) buffer NumBlades {
 	  uint vertexCount;   // Write the number of blades remaining here
@@ -92,7 +86,7 @@ void main() {
 	vec3 r = (iv2 - v2) * stiffness;
 
 	// Calculate Wind Influence (we're doing a simple ripple here)
-	float windStrength = WIND_AMPLITUDE * sin(v0.x + v0.z + totalTime);
+	float windStrength = WIND_AMPLITUDE * sin(v0.x + v0.z + (totalTime / 2.5));
 	vec3 windVector = abs(windStrength) * vec3(-1.0, 0.0, 0.0);
 
 	// now get the directional alignment and the height ratio
@@ -127,11 +121,36 @@ void main() {
     bladeData.data[gl_GlobalInvocationID.x].v1 = vec4(v1corr, height);
 	bladeData.data[gl_GlobalInvocationID.x].v2 = vec4(v2corr, width);
 
-	// Perform orientation cull test
+	//// Perform orientation cull test
 	bool isFacingCamera = abs(dot(camera.view * vec4(cross(up, front), 0.0), vec4(0.0, 0.0, -1.0, 0.0))) > ORIENTATION_TOLERANCE;
+	
+	//// Perform view frustum cull test
+	// get midpoint of the blade
+	vec3 midpoint = (1.0/4.0) * v0 * (1.0/2.0) * v1corr * (1.0/4.0) * v2corr;
+	
+	// get the vectors in clip space
+	vec4 v0Clip = camera.proj * camera.view * vec4(v0, 1.0);
+	vec4 v2Clip = camera.proj * camera.view * vec4(v2corr, 1.0);
+	vec4 mClip = camera.proj * camera.view * vec4(midpoint, 1.0);
+	
+	// determine if they are in view
+	bool isv0InView = inBounds(v0Clip.x, v0Clip.w + VIEW_FRUSTUM_TOLERANCE) && inBounds(v0Clip.y, v0Clip.w + VIEW_FRUSTUM_TOLERANCE) && inBounds(v0Clip.z, v0Clip.w + VIEW_FRUSTUM_TOLERANCE);
+	bool isv2InView = inBounds(v2Clip.x, v2Clip.w + VIEW_FRUSTUM_TOLERANCE) && inBounds(v2Clip.y, v2Clip.w + VIEW_FRUSTUM_TOLERANCE) && inBounds(v2Clip.z, v2Clip.w + VIEW_FRUSTUM_TOLERANCE);
+	bool ismInView = inBounds(mClip.x, mClip.w + VIEW_FRUSTUM_TOLERANCE) && inBounds(mClip.y, mClip.w + VIEW_FRUSTUM_TOLERANCE) && inBounds(mClip.z, mClip.w + VIEW_FRUSTUM_TOLERANCE);
 
-	// Perform View-Frustum Culling
-	if (isFacingCamera) {
+	// the blade is in view only if all of them are
+	bool isInView = isv0InView && isv2InView && ismInView;
+
+	//// Perform Distance cull test
+	vec4 v0View = camera.view * vec4(v0, 1.0);
+	vec4 upView = normalize(camera.view * vec4(up, 0.0));
+	float distanceFromCam = length(v0View); //- (dot(v0View, vec4(up, 0.0)) * vec4(up, 0.0)));
+
+	// sample based on bucket if blade is culled or not
+	bool isCloseEnough = (gl_GlobalInvocationID.x % NUM_BUCKETS) < floor(NUM_BUCKETS * (1.0 - (distanceFromCam / MAX_DISTANCE)));
+
+	// If the blade passes all of these tests add it to the culledBladeData
+	if (isFacingCamera && isInView && isCloseEnough) {
 		uint count = atomicAdd(numBlades.vertexCount, 1);
 		barrier();
 		culledBladeData.data[count].v0 = vec4(v0, orientation);
@@ -139,7 +158,4 @@ void main() {
 		culledBladeData.data[count].v2 = vec4(v2corr, width);
 		culledBladeData.data[count].up = vec4(up, stiffness);
 	}
-
-	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
-	// You want to write the visible blades to the buffer without write conflicts between threads
 }
