@@ -18,7 +18,9 @@ public:
     void CreateCameraDescriptorSetLayout();
     void CreateModelDescriptorSetLayout();
     void CreateTimeDescriptorSetLayout();
-    void CreateComputeDescriptorSetLayout();
+    void CreateComputeBladesDescriptorSetLayout();
+	void CreateComputeCulledBladesDescriptorSetLayout();
+	void CreateComputeNumBladesDescriptorSetLayout();
 
     void CreateDescriptorPool();
 
@@ -26,7 +28,9 @@ public:
     void CreateModelDescriptorSets();
     void CreateGrassDescriptorSets();
     void CreateTimeDescriptorSet();
-    void CreateComputeDescriptorSets();
+    void CreateComputeBladesDescriptorSets();
+	void CreateComputeCulledBladesDescriptorSets();
+	void CreateComputeNumBladesDescriptorSets();
 
     void CreateGraphicsPipeline();
     void CreateGrassPipeline();
@@ -56,13 +60,17 @@ private:
     VkDescriptorSetLayout cameraDescriptorSetLayout;
     VkDescriptorSetLayout modelDescriptorSetLayout;
     VkDescriptorSetLayout timeDescriptorSetLayout;
-	VkDescriptorSetLayout computeDescriptorSetLayout;
+	VkDescriptorSetLayout computeBladesDescriptorSetLayout;
+	VkDescriptorSetLayout computeCulledBladesDescriptorSetLayout;
+	VkDescriptorSetLayout computeNumBladesDescriptorSetLayout;
     
     VkDescriptorPool descriptorPool;
 
     VkDescriptorSet cameraDescriptorSet;
     std::vector<VkDescriptorSet> modelDescriptorSets;
-	std::vector<VkDescriptorSet> computeDescriptorSets;
+	std::vector<VkDescriptorSet> computeBladesDescriptorSets;
+	std::vector<VkDescriptorSet> computeCulledBladesDescriptorSets;
+	std::vector<VkDescriptorSet> computeNumBladesDescriptorSets;
 	std::vector<VkDescriptorSet> grassDescriptorSets;
     VkDescriptorSet timeDescriptorSet;
 

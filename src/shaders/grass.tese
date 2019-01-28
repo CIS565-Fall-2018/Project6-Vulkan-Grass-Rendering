@@ -40,7 +40,7 @@ void main() {
 	vec3 frontVec = normalize(cross(up, t1));
 
 	// calculate interpolation parameter for triangle tip
-	float t = 0.5 + (u - 0.5) * (1 - (max(v - 0.75, 0)/(1-0.75)));
+	//float t = 0.5 + (u - 0.5) * (1 - (max(v - 0.75, 0)/(1-0.75)));
 
 	// calculate interpolation parameter for quad
 	//float t = u;
@@ -49,21 +49,13 @@ void main() {
 	//float t = u + (0.5*v) - (u*v);
 
 	// calculate interpolation parameter for quadratic
-	//float t = u - (u * v * v);
+	float t = u - (u * v * v);
 
-	/*
 	// calculate lambertian shading term to pass to frag shader
 	vec4 posWorld = vec4(mix(c0, c1, t), 1.0);
 	vec4 lightPos = vec4(1.0, 1.0, 1.0, 1.0);
 
 	lightIntensity[0] = dot(normalize(lightPos - posWorld), normalize(vec4(n, 0.0)));
-    
-	if (lightIntensity[0] < 0.01) {
-		debug_col_out[0] = vec4(frontVec, 0.0);
-	} else {
-		debug_col_out[0] = vec4(0.0, 1.0, 0.0, 0.0);
-	}
-	*/
 
 	gl_Position = camera.proj * camera.view * vec4(mix(c0, c1, t), 1.0);
 }

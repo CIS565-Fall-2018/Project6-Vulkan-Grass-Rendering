@@ -66,6 +66,8 @@ namespace {
 }
 
 int main() {
+	//while (!GetAsyncKeyState(VK_F12));
+
     static constexpr char* applicationName = "Vulkan Grass Rendering";
     InitializeWindow(640, 480, applicationName);
 

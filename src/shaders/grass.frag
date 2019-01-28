@@ -15,5 +15,5 @@ layout(location = 0) out vec4 outColor;
 void main() {
     // TODO: Compute fragment color with like some sort of lambert or something
 
-    outColor = vec4(0.0, 1.0, 0.0, 0.0);
+    outColor = lightIntensity * vec4(34.0 / 255.0, 139.0 / 255.0, 34.0 / 255.0, 0.0);
 }
