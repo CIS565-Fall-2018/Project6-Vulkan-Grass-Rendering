@@ -127,10 +127,16 @@ The optimal workgroup size, as we expected, was 32. The other workgoup sizes gav
 
 From Humble Beginnings
 =============
-![](img/firstOutput.png)
-![](img/start.png)
+#### The First output I got from the grass blade shader (my orientation vector was off)
+![](img/firstOutput.png) 
+
+#### The First tessellated blades, very naive implementation
 ![](img/initial.gif)
+
+#### The First blades given an orientation
 ![](img/progress.gif)
+
+#### Initial implementation of the wind function (lambert shader broken)
 ![](img/windy.gif)
 
 Credits
