@@ -7,11 +7,15 @@ Vulkan Grass Rendering
   * [LinkedIn](https://www.linkedin.com/in/liam-dugan-95a961135/), [personal website](http://liamdugan.com/)
 * Tested on: Windows 10, Intel(R) Xeon(R) CPU E5-2687W v3 @ 3.10GHz 32GB, TITAN V 28.4GB (Lab Computer)
 
-![](final.gif) ![](manyblades.gif)
+<img align="center" src="img/final.gif"/>
 
 What is Grass Rendering?
 =============
-This project is an implementation of the paper, [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf). It involves two different rendering passes. First there's a compute pass which calculates the forces exerted on the blades and decides whether or not the given blade should be culled, then the second render pass tessellates the culled grass blades to different levels of detail based on the bezier curve points' distance from the camera and renders them with simple Lambertian shading to get the final blade output.
+This project is an implementation of the paper, [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf). 
+
+<img align="center" src="img/manyBlades.gif"/>
+
+It involves two different rendering passes. First there's a compute pass which calculates the forces exerted on the blades and decides whether or not the given blade should be culled, then the second render pass tessellates the culled grass blades to different levels of detail based on the bezier curve points' distance from the camera and renders them with simple Lambertian shading to get the final blade output.
 
 ## Representing Grass as Bezier Curves
 
@@ -20,6 +24,8 @@ Each Bezier curve has three control points.
 * `v0`: the position of the grass blade on the geomtry
 * `v1`: a Bezier curve guide that is always "above" `v0` with respect to the grass blade's up vector (explained soon)
 * `v2`: a physical guide for which we simulate forces on
+
+<img align="right" src="img/blade_model.jpg"/>
 
 We also store per-blade characteristics that will help us simulate and tessellate our grass blades correctly.
 * `up`: the blade's up vector, which corresponds to the normal of the geometry that the grass blade resides on at `v0`
@@ -31,10 +37,7 @@ We also store per-blade characteristics that will help us simulate and tessellat
 We can pack all this data into four `vec4`s, such that `v0.w` holds orientation, `v1.w` holds height, `v2.w` holds width, and 
 `up.w` holds the stiffness coefficient.
 
-![](img/blade_model.jpg)
-
-Simulating Forces
-----------
+## Simulating Forces
 In this project, the forces on grass blades are simulated in a compute shader while they are still Bezier curves. The simulated forces are:
 
 #### Gravity
@@ -70,25 +73,20 @@ apply this translation and expect the simulation to be robust. Our forces might 
 
 We use section 5.2 of the paper in order to learn how to determine the corrected final positions for `v1` and `v2`. 
 
-Culling tests
----------
+## Culling tests
 Although forces are simulated on every grass blade at every frame, there are many blades that do not need to be rendered
 due to a variety of reasons. Here are some heuristics we can use to cull blades that won't contribute positively to a given frame.
 
 #### Orientation culling
-
-Consider the scenario in which the front face direction of the grass blade is perpendicular to the view vector. Since our grass blades
+<img align="left" src="img/frustumculling.gif"/> Consider the scenario in which the front face direction of the grass blade is perpendicular to the view vector. Since our grass blades
 won't have width, we will end up trying to render parts of the grass that are actually smaller than the size of a pixel. This could
 lead to aliasing artifacts.
 
 In order to remedy this, we can cull these blades! Simply do a dot product test to see if the view vector and front face direction of
 the blade are perpendicular. For this we use a threshold value of `0.8` to cull.
 
-![](frustumculling.gif)
-
 #### View-frustum culling
-
-We also want to cull blades that are outside of the view-frustum, considering they won't show up in the frame anyway. To determine if
+<img align="right" src="img/viewFrustumCulling.gif"/> We also want to cull blades that are outside of the view-frustum, considering they won't show up in the frame anyway. To determine if
 a grass blade is in the view-frustum, we want to compare the visibility of three points: `v0, v2, and m`, where `m = (1/4)v0 * (1/2)v1 * (1/4)v2`.
 Notice that we aren't using `v1` for the visibility test. This is because the `v1` is a Bezier guide that doesn't represent a position on the grass blade.
 We instead use `m` to approximate the midpoint of our Bezier curve.
@@ -97,11 +95,8 @@ If all three points are outside of the view-frustum, we will cull the grass blad
 blades a little more conservatively. This can help with cases in which the Bezier curve is technically not visible, but we might be able to see the blade
 if we consider its width.
 
-![](viewFrustumCulling.gif)
-
 #### Distance culling
-
-Similarly to orientation culling, we can end up with grass blades that at large distances are smaller than the size of a pixel. This could lead to additional
+<img align="left" src="img/buckets.gif"/> Similarly to orientation culling, we can end up with grass blades that at large distances are smaller than the size of a pixel. This could lead to additional
 artifacts in our renders. In this case, we can cull grass blades as a function of their distance from the camera.
 
 We define two parameters here.
@@ -111,10 +106,7 @@ We define two parameters here.
 The grass blades in the bucket closest to the camera are kept while an increasing number of grass blades
 are culled with each farther bucket.
 
-![](buckets.gif)
-
-Tessellating Bezier curves with varying levels of detail
--------
+## Tessellating Bezier curves with varying levels of detail
 In this project, we pass in each Bezier curve as a single patch to be processed by your grass graphics pipeline. We tessellate this patch into a quad with a quadratic shape 
 
 In the tessellation control shader, we set the base level of inner and outer tessellation for when the blades are at `MAX_DISTANCE` to be 2.0 and we set the highest level of tessellation to be `6.0` when the blades are at distance 0 and interpolate between them.
@@ -126,15 +118,17 @@ The performance analysis is where you will investigate how...
 * Your renderer handles varying numbers of grass blades
 * The improvement you get by culling using each of the three culling tests
 
-![](Performance.png)
-![](Workgroup.png)
+![](img/Performance.png)
+![](img/Workgroup.png)
 
 Bloopers
 =============
 
-![](initial.gif)
-![](progress.gif)
-![](windy.gif)
+![](img/initial.gif)
+![](img/progress.gif)
+![](img/windy.gif)
+![](img/start.png)
+![](img/firstOutput.png)
 
 Credits
 =============
