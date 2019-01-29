@@ -77,7 +77,7 @@ We use section 5.2 of the paper in order to learn how to determine the corrected
 Although forces are simulated on every grass blade at every frame, there are many blades that do not need to be rendered
 due to a variety of reasons. Here are some heuristics we can use to cull blades that won't contribute positively to a given frame.
 
-#### Orientation culling
+### Orientation culling
 <img align="left" src="img/frustumculling.gif"/> Consider the scenario in which the front face direction of the grass blade is perpendicular to the view vector. Since our grass blades
 won't have width, we will end up trying to render parts of the grass that are actually smaller than the size of a pixel. This could
 lead to aliasing artifacts.
@@ -85,8 +85,8 @@ lead to aliasing artifacts.
 In order to remedy this, we can cull these blades! Simply do a dot product test to see if the view vector and front face direction of
 the blade are perpendicular. For this we use a threshold value of `0.8` to cull.
 
-#### View-frustum culling
-<img align="right" src="img/viewFrustumCulling.gif"/> We also want to cull blades that are outside of the view-frustum, considering they won't show up in the frame anyway. To determine if
+### View-frustum culling
+<img align="left" src="img/viewFrustumCulling.gif"/> We also want to cull blades that are outside of the view-frustum, considering they won't show up in the frame anyway. To determine if
 a grass blade is in the view-frustum, we want to compare the visibility of three points: `v0, v2, and m`, where `m = (1/4)v0 * (1/2)v1 * (1/4)v2`.
 Notice that we aren't using `v1` for the visibility test. This is because the `v1` is a Bezier guide that doesn't represent a position on the grass blade.
 We instead use `m` to approximate the midpoint of our Bezier curve.
@@ -95,7 +95,7 @@ If all three points are outside of the view-frustum, we will cull the grass blad
 blades a little more conservatively. This can help with cases in which the Bezier curve is technically not visible, but we might be able to see the blade
 if we consider its width.
 
-#### Distance culling
+### Distance culling
 <img align="left" src="img/buckets.gif"/> Similarly to orientation culling, we can end up with grass blades that at large distances are smaller than the size of a pixel. This could lead to additional
 artifacts in our renders. In this case, we can cull grass blades as a function of their distance from the camera.
 
@@ -113,22 +113,25 @@ In the tessellation control shader, we set the base level of inner and outer tes
 
 Performance Analysis
 =============
+### Blade Culling 
+The performance we got for blade culling far outshined the performance we got for non-culling, despite having to do much more work in the compute shader. Without culling the blade count we were barely even able to render 4 million blades and we encountered substantial physics bugs on 8 million. As for the approach with culling, we were able to get a stable 25fps on 8 million blades and we hit a mak of 32 million blades (data point not shown).
 
-The performance analysis is where you will investigate how...
-* Your renderer handles varying numbers of grass blades
-* The improvement you get by culling using each of the three culling tests
+The reason that culling improves performance so substantially here is the avoidance of entire extra pipeline calls. Despite spending much longer amount of time in the compute shader, that time is made up for by that blade never entering the grass blade render pass.
 
-![](img/Performance.png)
+<img align="center" src="img/Performance.png"/>
+
+### Workgroup Size 
+The optimal workgroup size, as we expected, was 32. The other workgoup sizes gave similar performance, but I believe 32 won out because it is the traditional size of a warp on NVIDIA hardware and so it was likely the GPU was easily able to handle scheduling logical blocks of 32 threads each.
+
 ![](img/Workgroup.png)
 
-Bloopers
+From Humble Beginnings
 =============
-
+![](img/firstOutput.png)
+![](img/start.png)
 ![](img/initial.gif)
 ![](img/progress.gif)
 ![](img/windy.gif)
-![](img/start.png)
-![](img/firstOutput.png)
 
 Credits
 =============
