@@ -1,11 +1,6 @@
 Vulkan Grass Rendering
 ======================
 
-**University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
-
-* Lan Lou
-* Tested on: Windows 10, i7-6700HQ @ 2.60GHz 16GB, GTX 1070 8GB (Personal Laptop)
-
 ## Demo rendering
 
 ![](img/show.gif)
