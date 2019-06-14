@@ -1,3 +1,91 @@
+//#pragma once
+//
+//#include "Device.h"
+//#include "SwapChain.h"
+//#include "Scene.h"
+//#include "Camera.h"
+//
+//class Renderer {
+//public:
+//    Renderer() = delete;
+//    Renderer(Device* device, SwapChain* swapChain, Scene* scene, Camera* camera);
+//    ~Renderer();
+//
+//    void CreateCommandPools();
+//
+//    void CreateRenderPass();
+//
+//    void CreateCameraDescriptorSetLayout();
+//    void CreateModelDescriptorSetLayout();
+//    void CreateTimeDescriptorSetLayout();
+//    void CreateComputeDescriptorSetLayout();
+//	void CreateGrassDescriptorSetLayout();
+//
+//    void CreateDescriptorPool();
+//
+//    void CreateCameraDescriptorSet();
+//    void CreateModelDescriptorSets();
+//    void CreateGrassDescriptorSets();
+//    void CreateTimeDescriptorSet();
+//    void CreateComputeDescriptorSets();
+//
+//    void CreateGraphicsPipeline();
+//    void CreateGrassPipeline();
+//    void CreateComputePipeline();
+//
+//    void CreateFrameResources();
+//    void DestroyFrameResources();
+//    void RecreateFrameResources();
+//
+//    void RecordCommandBuffers();
+//    void RecordComputeCommandBuffer();
+//
+//    void Frame();
+//
+//private:
+//    Device* device;
+//    VkDevice logicalDevice;
+//    SwapChain* swapChain;
+//    Scene* scene;
+//    Camera* camera;
+//
+//    VkCommandPool graphicsCommandPool;
+//    VkCommandPool computeCommandPool;
+//
+//    VkRenderPass renderPass;
+//
+//    VkDescriptorSetLayout cameraDescriptorSetLayout;
+//    VkDescriptorSetLayout modelDescriptorSetLayout;
+//    VkDescriptorSetLayout timeDescriptorSetLayout;
+//	VkDescriptorSetLayout computeDescriptorLayout;
+//	VkDescriptorSetLayout grassDescriptorLayout;
+//    
+//    VkDescriptorPool descriptorPool;
+//
+//    VkDescriptorSet cameraDescriptorSet;
+//    std::vector<VkDescriptorSet> modelDescriptorSets;
+//    VkDescriptorSet timeDescriptorSet;
+//	std::vector<VkDescriptorSet> computeDescriptorSets;
+//	std::vector<VkDescriptorSet> grassDescriptorSets;
+//
+//    VkPipelineLayout graphicsPipelineLayout;
+//    VkPipelineLayout grassPipelineLayout;
+//    VkPipelineLayout computePipelineLayout;
+//
+//    VkPipeline graphicsPipeline;
+//    VkPipeline grassPipeline;
+//    VkPipeline computePipeline;
+//
+//    std::vector<VkImageView> imageViews;
+//    VkImage depthImage;
+//    VkDeviceMemory depthImageMemory;
+//    VkImageView depthImageView;
+//    std::vector<VkFramebuffer> framebuffers;
+//
+//    std::vector<VkCommandBuffer> commandBuffers;
+//    VkCommandBuffer computeCommandBuffer;
+//};
+
 #pragma once
 
 #include "Device.h"
@@ -7,76 +95,82 @@
 
 class Renderer {
 public:
-    Renderer() = delete;
-    Renderer(Device* device, SwapChain* swapChain, Scene* scene, Camera* camera);
-    ~Renderer();
+	Renderer() = delete;
+	Renderer(Device* device, SwapChain* swapChain, Scene* scene, Camera* camera);
+	~Renderer();
 
-    void CreateCommandPools();
+	void CreateCommandPools();
 
-    void CreateRenderPass();
+	void CreateRenderPass();
 
-    void CreateCameraDescriptorSetLayout();
-    void CreateModelDescriptorSetLayout();
-    void CreateTimeDescriptorSetLayout();
-    void CreateComputeDescriptorSetLayout();
+	void CreateCameraDescriptorSetLayout();
+	void CreateModelDescriptorSetLayout();
+	void CreateGrassDescriptorSetLayout();
+	void CreateTimeDescriptorSetLayout();
 
-    void CreateDescriptorPool();
+	void CreateComputeDescriptorSetLayout();
 
-    void CreateCameraDescriptorSet();
-    void CreateModelDescriptorSets();
-    void CreateGrassDescriptorSets();
-    void CreateTimeDescriptorSet();
-    void CreateComputeDescriptorSets();
+	void CreateDescriptorPool();
 
-    void CreateGraphicsPipeline();
-    void CreateGrassPipeline();
-    void CreateComputePipeline();
+	void CreateCameraDescriptorSet();
+	void CreateModelDescriptorSets();
+	void CreateGrassDescriptorSets();
+	void CreateTimeDescriptorSet();
+	void CreateComputeDescriptorSets();
 
-    void CreateFrameResources();
-    void DestroyFrameResources();
-    void RecreateFrameResources();
+	void CreateGraphicsPipeline();
+	void CreateGrassPipeline();
+	void CreateComputePipeline();
 
-    void RecordCommandBuffers();
-    void RecordComputeCommandBuffer();
+	void CreateFrameResources();
+	void DestroyFrameResources();
+	void RecreateFrameResources();
 
-    void Frame();
+	void RecordCommandBuffers();
+	void RecordComputeCommandBuffer();
+
+	void Frame();
 
 private:
-    Device* device;
-    VkDevice logicalDevice;
-    SwapChain* swapChain;
-    Scene* scene;
-    Camera* camera;
+	Device* device;
+	VkDevice logicalDevice;
+	SwapChain* swapChain;
+	Scene* scene;
+	Camera* camera;
 
-    VkCommandPool graphicsCommandPool;
-    VkCommandPool computeCommandPool;
+	VkCommandPool graphicsCommandPool;
+	VkCommandPool computeCommandPool;
 
-    VkRenderPass renderPass;
+	VkRenderPass renderPass;
 
-    VkDescriptorSetLayout cameraDescriptorSetLayout;
-    VkDescriptorSetLayout modelDescriptorSetLayout;
-    VkDescriptorSetLayout timeDescriptorSetLayout;
-    
-    VkDescriptorPool descriptorPool;
+	VkDescriptorSetLayout cameraDescriptorSetLayout;
+	VkDescriptorSetLayout modelDescriptorSetLayout;
+	VkDescriptorSetLayout grassDescriptorSetLayout;
+	VkDescriptorSetLayout timeDescriptorSetLayout;
+	VkDescriptorSetLayout computeDescriptorSetLayout;
 
-    VkDescriptorSet cameraDescriptorSet;
-    std::vector<VkDescriptorSet> modelDescriptorSets;
-    VkDescriptorSet timeDescriptorSet;
+	VkDescriptorPool descriptorPool;
 
-    VkPipelineLayout graphicsPipelineLayout;
-    VkPipelineLayout grassPipelineLayout;
-    VkPipelineLayout computePipelineLayout;
+	VkDescriptorSet cameraDescriptorSet;
+	std::vector<VkDescriptorSet> modelDescriptorSets;
+	VkDescriptorSet timeDescriptorSet;
+	std::vector<VkDescriptorSet> grassDescriptorSets;
+	std::vector<VkDescriptorSet> computeDescriptorSets;
 
-    VkPipeline graphicsPipeline;
-    VkPipeline grassPipeline;
-    VkPipeline computePipeline;
+	VkPipelineLayout graphicsPipelineLayout;
+	VkPipelineLayout grassPipelineLayout;
+	VkPipelineLayout computePipelineLayout;
 
-    std::vector<VkImageView> imageViews;
-    VkImage depthImage;
-    VkDeviceMemory depthImageMemory;
-    VkImageView depthImageView;
-    std::vector<VkFramebuffer> framebuffers;
+	VkPipeline graphicsPipeline;
+	VkPipeline grassPipeline;
+	VkPipeline computePipeline;
 
-    std::vector<VkCommandBuffer> commandBuffers;
-    VkCommandBuffer computeCommandBuffer;
+	std::vector<VkImageView> imageViews;
+	VkImage depthImage;
+	VkDeviceMemory depthImageMemory;
+	VkImageView depthImageView;
+	std::vector<VkFramebuffer> framebuffers;
+
+	std::vector<VkCommandBuffer> commandBuffers;
+	VkCommandBuffer computeCommandBuffer;
 };
