@@ -18,7 +18,7 @@ ________________________________________________________________________________
 
 ![Developer](https://img.shields.io/badge/Developer-Hannah-0f97ff.svg?style=flat) ![CUDA 8.0](https://img.shields.io/badge/CUDA-8.0-yellow.svg) ![Built](https://img.shields.io/appveyor/ci/gruntjs/grunt.svg) ![Issues](https://img.shields.io/badge/issues-none-green.svg)
 
-[//]: # ( ![Progress](https://img.shields.io/badge/implementation-in%20progress-orange.svg )
+[//]: # (https://img.shields.io/badge/implementation-in%20progress-orange.svg)
 
 [Overview](#Overview) - [Features](#features) - [Forces](#forces) - [Culling](#culling) - [Runtime Comparisons](#runtime-comparisons) - [Shading](#shading) - [Bloopers](#bloopers) - [References](#references) 
 
