@@ -26,7 +26,7 @@ can use as a reference to compare to. Feel free to get creative with your implem
 
 **Important:**
 - If you are not in CGGT/DMD, you may replace this project with a GPU compute
-project. You MUST get this pre-approved by Ottavio before continuing!
+project. You MUST get this pre-approved by the TAs/Shehzan before continuing!
 
 ### Contents
 
